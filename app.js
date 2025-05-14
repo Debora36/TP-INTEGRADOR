@@ -14,7 +14,7 @@ app.set('views', path.join(__dirname, 'vistas'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(express.urlencoded({extended: true}));
-//app.use(express.json());
+app.use(express.static('../public/img'));
 // Ruta principal que renderiza la vista Pug
 app.get('/', (req, res) => {
   res.render('index'); // busca vistas/index.pug
