@@ -29,6 +29,10 @@ app.get('/recepcionista', (req, res)=>{
   res.render('recepcion'); // busca vistas/recepcion.pug
 });
 
+app.get('/registro', (req, res)=>{
+  res.render('nuevopaciente');
+});
+
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);
 });
