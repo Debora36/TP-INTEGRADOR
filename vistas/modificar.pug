@@ -1,0 +1,100 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Modificar
+    link(rel="icon", href="#", type="image/png")
+    link(rel="stylesheet", href="/style.css")
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css")
+    link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css", rel="stylesheet")
+    script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
+  body
+    .navbar.navbar-expand-sm.bg-info.navbar-dark.p-3.mb-4
+        .container-fluid
+            .navbar-brand
+              a(href="/recepcionista", title="Inicio" class="text-decoration-none")
+                h4.display-6.px-4.text-white Sistema de Información Hospitalaria
+            .d-flex.ms-auto.align-items-center
+                span.text-white.me-2 NombreUsuario
+                a(href="/", title="Cerrar sesión")
+                    i.fas.fa-sign-out-alt.text-white.mt-4
+    .container
+        h1.text-center.text-info Modificar admisión del paciente
+        p Busca el paciente por DNI y modifica los datos si es necesario.
+        form(action="/buscar-paciente" method="GET" onclick="buscarPaciente()").p-0
+            .col-md-4
+                label(for="dni") DNI del paciente:
+                input(type="text" name="dni" id="dni" required)
+            .col-md-4.mb-4
+                button(type="buton" onclick="buscarPaciente()") Buscar paciente
+    .container.d-none
+        h2 Datos del paciente
+        form(action="/asignar-habitacion" method="POST").p-0
+        .row
+            .col-sm-6
+                label(for="nombre") Nombre:
+                input(type="text" name="nombre" required)
+            .col-sm-6
+                label(for="apellido") Apellido:
+                input(type="text" name="apellido" required)
+            .row 
+            .col-sm-6
+                label(for="sexo") Sexo:
+                select(name="sexo" required)
+                    option(value="M") Masculino
+                    option(value="F") Femenino
+            .col-sm-6
+                label(for="dni") DNI:
+                input(type="text" name="dni" required)
+            .row
+            .col-sm-6
+                label(for="telefono") Teléfono:
+                input(type="text" name="telefono" required)
+            .col-sm-6
+                label(for="fecha_nacimiento") Fecha de nacimiento:
+                input(type="date" name="fecha_nacimiento" required)
+            .col-sm-12
+                label Correo electrónico:
+                input(type="email" name="correo" required)
+            .row
+            .col-sm-6
+                label(for="nacionalidad") Lugar de nacimiento:
+                input(type="text" name="lugar_nacimiento" required)
+            .col-sm-6
+                label(for="direccion") Dirección:
+                input(type="text" name="direccion" required)
+            .row
+                .col-sm-6
+                    label(for="emergencia") Contacto de emergencia:
+                    input(type="text" name="emergencia" required)
+                .col-sm-6.mb-4
+                    label(for="obrasocial") ¿Tiene obra social?:
+                        .row
+                            .col-sm-6
+                                input#obra-si.mt-3(type="radio" name="obrasocial" value="si" required)
+                                label(for="obra-si") Si
+                            .col-sm-6
+                                input#obra-no.mt-3(type="radio" name="obrasocial" value="no")
+                                label(for="obra-no") No
+            .row.justify-content-center
+                .col-md-6.mb-4
+                    button(type="submit" onclick="guardarCambios()").mb-5 Guardar cambios
+                .col-md-6.mb-4
+                    button(type="submit" onclick="eliminarPaciente()").mb-5 Eliminar paciente
+    .container
+        .row.justify-content-center
+            .col-md-6.mb-4
+                a(href="/recepcionista", class="text-decoration-none")
+                .card.h-100.shadow.text-center
+                    img.card-img-top(src="/img/logo-hospital.png", alt="Card image cap")
+                    .card-body
+                    h5.card-title.text-info Volver a Recepción
+                    p.card-text Regresar a la página de recepción.
+            .col-md-6.mb-4
+                a(href="/Modificar", class="text-decoration-none")
+                .card.h-100.shadow.text-center
+                    img.card-img-top(src="/img/logo-hospital.png", alt="Card image cap")
+                    .card-body
+                    h5.card-title.text-info Modificar o Actualizar
+                    p.card-text Modificar o actualizar datos del paciente

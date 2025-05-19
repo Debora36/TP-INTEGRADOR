@@ -33,6 +33,14 @@ app.get('/registro', (req, res)=>{
   res.render('nuevopaciente');
 });
 
+app.get('/admision', (req, res)=>{
+  res.render('admision');
+});
+
+app.get('/modificar', (req, res)=>{
+  res.render('modificar');
+});
+
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);
 });
