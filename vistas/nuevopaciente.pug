@@ -21,7 +21,7 @@ html(lang="en")
                     i.fas.fa-sign-out-alt.text-white.mt-4
 
     .container
-        h1.text-center.text-info Nueva Internación
+        h1.text-center.text-info Nuevo paciente para internación
         p Complete el siguiente formulario para registrarlo:
         form(action="/registrar-paciente" method="POST").p-0
           .row
@@ -61,36 +61,97 @@ html(lang="en")
               label(for="emergencia") Contacto de emergencia:
               input(type="text" name="emergencia" required)
             .col-sm-6.mb-4
-              label(for="obrasocial") ¿Tiene obra social?:
-                .row
-                  .col-sm-6
-                    input#obra-si.mt-3(type="radio" name="obrasocial" value="si" required)
-                    label(for="obra-si") Si
-                  .col-sm-6
-                    input#obra-no.mt-3(type="radio" name="obrasocial" value="no")
-                    label(for="obra-no") No
+              label(for="obra_social") ¿Tiene obra social?
+              .form-check.form-check-inline.ms-3
+                input.form-check-input.ms-3(type="radio" name="obra_social" id="obra_social_si" value="si" required)
+                label.form-check-label.ms-2(for="obra_social_si") Sí
+              .form-check.form-check-inline
+                input.form-check-input(type="radio" name="obra_social" id="obra_social_no" value="no")
+                label.form-check-label.ms-2(for="obra_social_no") No
+              button.btn.btn-outline-info.p-2(type="button" data-bs-toggle="modal" data-bs-target="#modalObraSocial") Cargar obra social
+
+              // Modal
+              .modal.fade(id="modalObraSocial" tabindex="-1" aria-labelledby="modalObraSocialLabel" aria-hidden="true")
+                .modal-dialog
+                  .modal-content
+                    .modal-header
+                      h5.modal-title#modalObraSocialLabel Cargar Obra Social
+                      button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+                    .modal-body
+                      form
+                        .mb-3
+                          label(for="nombre_obra_social" class="form-label") Nombre de la obra social:
+                          input.form-control(type="text" id="nombre_obra_social" name="nombre_obra_social")
+                        .mb-3
+                          label(for="numero_afiliado" class="form-label") Número de afiliado:
+                          input.form-control(type="text" id="numero_afiliado" name="numero_afiliado")
+                        .mb-3
+                          label(for="plan" class="form-label") Plan:
+                          input.form-control(type="text" id="plan" name="plan")
+                    .modal-footer
+                      button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cerrar
+                      button.btn.btn-primary(type="button" data-bs-dismiss="modal") Guardar
           button(type="submit").mb-5 Registrar paciente
           .row.justify-content-center
-            .col-md-4.mb-4
+            .col-md-3.mb-4
               a(href="/recepcionista", class="text-decoration-none")
                 .card.h-100.shadow.text-center
-                  img.card-img-top(src="/img/logo-hospital.png", alt="Card image cap")
+                  i.fa-solid.fa-hospital-user.fa-4x.text-info.mt-4
                   .card-body
                     h5.card-title.text-info Volver a Recepción
                     p.card-text Regresar a la página de recepción.
-            .col-md-4.mb-4
+            .col-md-3.mb-4
               a(href="/Admision", class="text-decoration-none")
                 .card.h-100.shadow.text-center
-                  img.card-img-top(src="/img/logo-hospital.png", alt="Card image cap")
+                  i.fa-solid.fa-bed.fa-4x.text-info.mt-4
                   .card-body
                     h5.card-title.text-info Admisión de Paciente
                     p.card-text Admisión de paciente para internación.
-            .col-md-4.mb-4
+            .col-md-3.mb-4
               a(href="/Modificar", class="text-decoration-none")
                 .card.h-100.shadow.text-center
-                  img.card-img-top(src="/img/logo-hospital.png", alt="Card image cap")
+                  i.fa-solid.fa-user-pen.fa-4x.text-info.mt-4
                   .card-body
                     h5.card-title.text-info Modificar o Actualizar
                     p.card-text Modificar o actualizar datos del paciente
+            .col-md-3.mb-4
+              // Botón para abrir el modal de gestión de turnos
+              a(href="#", class="text-decoration-none", data-bs-toggle="modal", data-bs-target="#turnoModal")
+                .card.h-100.shadow.text-center
+                  i.fa-solid.fa-calendar-check.fa-4x.text-info.mt-4
+                  .card-body
+                    h5.card-title.text-info Gestión de turno
+                    p.card-text Verifica los turnos de los pacientes ó asigna uno nuevo
+
+              // Modal de gestión de turnos
+              .modal.fade#turnoModal(tabindex="-1", aria-labelledby="turnoModalLabel", aria-hidden="true")
+                .modal-dialog
+                  .modal-content
+                    .modal-header
+                      h5.modal-title#turnoModalLabel Gestión de Turnos
+                      button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+                    .modal-body.m-0.p-0
+                      form#turnoForm
+                        .mb-3
+                          label.form-label(for="dni_paciente") DNI del aciente
+                          input.form-control(type="text", id="dni_paciente", name="dni_paciente", placeholder="DNI del paciente")
+                        .mb-3
+                          label.form-label(for="medico") Médico
+                          select.form-control(id="medico", name="medico")
+                            option(value="" selected disabled) Seleccione un médico
+                            option(value="Dr. Juan Pérez") Dr. Juan Pérez
+                            option(value="Dra. Ana Gómez") Dra. Ana Gómez
+                            option(value="Dr. Carlos Ruiz") Dr. Carlos Ruiz
+                            option(value="Dra. Laura Fernández") Dra. Laura Fernández
+                        .mb-3
+                          label.form-label(for="fecha") Fecha
+                          input.form-control(type="date", id="fecha", name="fecha")
+                        .mb-3
+                          label.form-label(for="hora") Hora
+                          input.form-control(type="time", id="hora", name="hora")
+                        .d-flex.justify-content-between
+                          button.btn.btn-primary.m-3(type="submit") Asignar Turno
+                          button.btn.btn-info.m-3(type="button", id="verTurnoBtn") Ver Turno
+                   
    
           
