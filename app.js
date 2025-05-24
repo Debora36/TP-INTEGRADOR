@@ -3,6 +3,16 @@ const pug = require('pug');
 const path = require('path');
 const app = express();
 const port = 3000;
+const mysql = require('mysql2');
+const sequelize = require('./db');
+const registroPacienteRoutes = require('./routes/nuevopaciente');
+const registroAdmisionRoutes = require('./routes/admision');
+
+sequelize.authenticate()
+  .then(() => console.log('Conexión a la base de datos exitosa.'))
+  .catch(err => console.error('Error de conexión:', err));
+// Configuración de la conexión a la base de datos
+
 
 // Indicar que vamos a usar Pug como motor de vistas
 app.set('view engine', 'pug');
@@ -14,8 +24,15 @@ app.set('views', path.join(__dirname, 'vistas'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(express.urlencoded({extended: true}));
+
 app.use(express.static('../public/img'));
 // Ruta principal que renderiza la vista Pug
+
+app.use(express.json());
+
+app.use('/registro', registroPacienteRoutes);
+app.use('/admision', registroAdmisionRoutes);
+
 app.get('/', (req, res) => {
   res.render('index'); // busca vistas/index.pug
 });
@@ -29,13 +46,6 @@ app.get('/recepcionista', (req, res)=>{
   res.render('recepcion'); // busca vistas/recepcion.pug
 });
 
-app.get('/registro', (req, res)=>{
-  res.render('nuevopaciente');
-});
-
-app.get('/admision', (req, res)=>{
-  res.render('admision');
-});
 
 app.get('/modificar', (req, res)=>{
   res.render('modificar');

@@ -32,17 +32,42 @@ html(lang="en")
         .row
             .col-sm-6
                 label(for="ala") Ala del hospital:
-                select(name="ala" required)
-                    option(value="1") Medicina interna
-                    option(value="2") Cirugia
-                    option(value="3") Cuidados intensivos
-                    option(value="4") Traumatología
+                select(name="ala" id="ala")
+                  option(value="" select disabled) Selecciona un ala
+                  each item in ala_hospital
+                    option(value=item.id) #{item.nombre_ala}, piso #{item.piso}  
             .col-sm-6
                 label(for="habitación") Habitación:
                 select(name="habitación" required)
                     option(value="1") simple
-                    option(value="2") Doble       
-            button(type="submit").mb-5 Registrar paciente
+                    option(value="2") Doble   
+        .row
+            .col-12.mb-4
+                h3.text-info.mb-3 Selecciona una cama disponible
+                .row.g-3
+                    //- Ejemplo de habitaciones y camas (puedes generar dinámicamente)
+                    each habitacion, i in [{numero: 101, camas: [{id: '101A', disponible: true}, {id: '101B', disponible: false}]}, {numero: 102, camas: [{id: '102A', disponible: true}, {id: '102B', disponible: true}]}]
+                        .col-md-6
+                            .card.shadow-sm.mb-2
+                                .card-header.bg-light
+                                    strong.text-secondary Habitación #{habitacion.numero}
+                                .card-body
+                                    .d-flex.flex-wrap.gap-3
+                                        each cama in habitacion.camas
+                                            label.cama-selector(position="relative", style="cursor:pointer;")
+                                                input(type="radio", name="cama", value=cama.id, required, disabled=!cama.disponible, style="display:none;")
+                                                if cama.disponible
+                                                    i.fa-solid.fa-bed.fa-2x.text-success.me-2(title="Cama disponible")
+                                                else
+                                                    i.fa-solid.fa-bed.fa-2x.text-danger.me-2(title="Cama ocupada", style="opacity:0.5;")
+                                                span #{cama.id}
+                style.
+                    .cama-selector input[type="radio"]:checked + .fa-bed {
+                        color: #0dcaf0 !important;
+                        text-shadow: 0 0 8px #0dcaf0;
+                    }
+            button(type="submit").mb-5 Asignar habitación
+
             .row.justify-content-center
                 .col-md-3.mb-4
                     a(href="/recepcionista", class="text-decoration-none")

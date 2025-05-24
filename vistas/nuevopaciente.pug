@@ -51,8 +51,11 @@ html(lang="en")
           input(type="email" name="correo" required)
           .row
             .col-sm-6
-              label(for="nacionalidad") Lugar de nacimiento:
-              input(type="text" name="lugar_nacimiento" required)
+              label(for="lugar_nacimiento") Lugar de nacimiento:
+              select(name="lugar_nacimiento" id="lugar_nacimiento" required)
+                option(value="" selected disabled) Seleccione un lugar de nacimiento
+                each item in nacionalidad
+                  option(value=item.id) #{item.nombre}
             .col-sm-6
               label(for="direccion") Dirección:
               input(type="text" name="direccion" required)
@@ -80,8 +83,12 @@ html(lang="en")
                     .modal-body
                       form
                         .mb-3
-                          label(for="nombre_obra_social" class="form-label") Nombre de la obra social:
-                          input.form-control(type="text" id="nombre_obra_social" name="nombre_obra_social")
+                        label(for="obrasSociales") Obra Social:
+                        select(name="obrasSociales" id="obrasSociales")
+                          option(value="" selected disabled) Seleccione una obra social
+                          each item in obra_social
+                            option(value=item.id) #{item.nombre}
+                      
                         .mb-3
                           label(for="numero_afiliado" class="form-label") Número de afiliado:
                           input.form-control(type="text" id="numero_afiliado" name="numero_afiliado")
