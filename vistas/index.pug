@@ -16,23 +16,21 @@ html(lang="en")
 
       .col-sm-5.formulario.h-100.align-items-center
         img(src="/img/logo-hospital.png", alt="")
-        form(action="/registro" method="post")
+        form(action="/login" method="post")
           h2 Bienvenido/a
           .form-input.input-icon
             i.fas.fa-user
-            input(type="text", id="user", name="user" required, placeholder="Usuario")
+            input(type="text", id="user", name="nombre_usuario" required, placeholder="Usuario")
           
           .form-input.input-icon
             i.fas.fa-lock
-            input(type="password", id="password", name="password" required, placeholder="Contraseña")
+            input(type="password", id="password", name="contrasena" required, placeholder="Contraseña")
 
           .form-input.input-icon
             i.fas.fa-user-tag
-            select(name="typeofuser")
+            select(name="rol")
               option(value="") Rol
-              option(value="user1") Médico
-              option(value="user2") Enfermero
-              option(value="user3") Recepcionista
-
-          a(href="#") ¿Olvidaste tu contraseña
+              option(value="Médico") Médico
+              option(value="Enfermero") Enfermero
+              option(value="Recepcionista") Recepcionista
           button(type="submit") Iniciar sesión

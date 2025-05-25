@@ -5,8 +5,19 @@ const app = express();
 const port = 3000;
 const mysql = require('mysql2');
 const sequelize = require('./db');
+
+const session = require('express-session');
+
+app.use(session({
+  secret: 'mi_clave_secreta', // poner algo más seguro despues
+  resave: false,
+  saveUninitialized: true,
+}));
+
 const registroPacienteRoutes = require('./routes/nuevopaciente');
 const registroAdmisionRoutes = require('./routes/admision');
+const loginRouter = require('./routes/login');
+const logoutRouter = require('./routes/logout');
 
 sequelize.authenticate()
   .then(() => console.log('Conexión a la base de datos exitosa.'))
@@ -32,6 +43,8 @@ app.use(express.json());
 
 app.use('/registro', registroPacienteRoutes);
 app.use('/admision', registroAdmisionRoutes);
+app.use('/login', loginRouter);
+app.use('/logout', logoutRouter);
 
 app.get('/', (req, res) => {
   res.render('index'); // busca vistas/index.pug
@@ -42,10 +55,18 @@ app.post('/registro', (req, res)=>{
     console.log(user, password, typeofuser);
 });
 
-app.get('/recepcionista', (req, res)=>{
-  res.render('recepcion'); // busca vistas/recepcion.pug
-});
 
+function verificarSesion(req, res, next) {
+  if (req.session.usuario) {
+    next();
+  } else {
+    res.redirect('/');
+  }
+}
+
+app.get('/recepcionista', verificarSesion, (req, res) => {
+  res.render('recepcion', { usuario: req.session.usuario });
+});
 
 app.get('/modificar', (req, res)=>{
   res.render('modificar');
