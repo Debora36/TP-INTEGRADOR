@@ -18,118 +18,217 @@ html(lang="en")
                 span.text-white.me-2=usuario.nombre_usuario
                 a(href="/logout", title="Cerrar sesión")
                     i.fas.fa-sign-out-alt.text-white.mt-4
+
     .container
-        h1.text-center.text-info Admisión de Paciente
-        p Busca el paciente por DNI y completa el formulario para asignar una habitación:
-        form(action="/buscar-paciente" method="GET")
-            label(for="dni") DNI del paciente:
-            input(type="text" name="dni" id="dni" required)
-            button(type="buton" onclick="buscarPaciente()") Buscar paciente
-        h2 Datos del paciente
-        form(action="/asignar-habitacion" method="POST").p-0
+      h1.text-center.text-info Admisión de Paciente
+      p Busca el paciente por DNI y completa el formulario para asignar una habitación:
+      .row
+        .col-md-4
+          label(for="dni") DNI del paciente:
+          input(type="text" name="dni" id="dni" required)
+        .col-md-4
+          button(type="button" onclick="buscarPaciente()") Buscar paciente
+      .row
+        .col-md-6
+          label Nombre:
+          input(type="text" name="nombre" required)
+        .col-md-6
+          label Apellido:
+          input(type="text" name="apellido" required)
+          input(type="text" name="Genero" id="Genero" required)
+      form#form-asignacion(action="/habitaciones/asignar-habitacion" method="POST").p-0
         .row
-            .col-sm-6
-                label(for="ala") Ala del hospital:
-                select(name="ala" id="ala")
-                  option(value="" select disabled) Selecciona un ala
-                  each item in ala_hospital
-                    option(value=item.id) #{item.nombre_ala}, piso #{item.piso}  
-            .col-sm-6
-                label(for="habitación") Habitación:
-                select(name="habitación" required)
-                    option(value="1") simple
-                    option(value="2") Doble   
-        .row
-            .col-12.mb-4
-                h3.text-info.mb-3 Selecciona una cama disponible
-                .row.g-3
-                    //- Ejemplo de habitaciones y camas (puedes generar dinámicamente)
-                    each habitacion, i in [{numero: 101, camas: [{id: '101A', disponible: true}, {id: '101B', disponible: false}]}, {numero: 102, camas: [{id: '102A', disponible: true}, {id: '102B', disponible: true}]}]
-                        .col-md-6
-                            .card.shadow-sm.mb-2
-                                .card-header.bg-light
-                                    strong.text-secondary Habitación #{habitacion.numero}
-                                .card-body
-                                    .d-flex.flex-wrap.gap-3
-                                        each cama in habitacion.camas
-                                            label.cama-selector(position="relative", style="cursor:pointer;")
-                                                input(type="radio", name="cama", value=cama.id, required, disabled=!cama.disponible, style="display:none;")
-                                                if cama.disponible
-                                                    i.fa-solid.fa-bed.fa-2x.text-success.me-2(title="Cama disponible")
-                                                else
-                                                    i.fa-solid.fa-bed.fa-2x.text-danger.me-2(title="Cama ocupada", style="opacity:0.5;")
-                                                span #{cama.id}
-                style.
-                    .cama-selector input[type="radio"]:checked + .fa-bed {
-                        color: #0dcaf0 !important;
-                        text-shadow: 0 0 8px #0dcaf0;
-                    }
-            button(type="submit").mb-5 Asignar habitación
+          .col-sm-4
+            label(for="ala") Ala del hospital:
+            select(name="ala" id="ala" required)
+              option(value="" disabled selected) Selecciona un ala
+              each item in ala_hospital
+                option(value=item.ID) #{item.nombre_ala}, piso #{item.piso}
+          .col-sm-4
+            label(for="habitación") Tipo de habitación:
+            select(name="tipo_habitacion" id="tipo" required)
+              option(value="" disabled selected) Selecciona tipo
+              option(value="1") Simple
+              option(value="2") Doble
+          .col-sm-4
+            button(type="button", class="btn btn-primary w-100", onclick="buscarHabitacion()") Buscar habitaciones
 
-            .row.justify-content-center
-                .col-md-3.mb-4
-                    a(href="/recepcionista", class="text-decoration-none")
-                        .card.h-100.shadow.text-center
-                            i.fa-solid.fa-hospital-user.fa-4x.text-info.mt-4
-                            .card-body
-                                h5.card-title.text-info Volver a Recepción
-                                p.card-text Regresar a la página de recepción.
-                .col-md-3.mb-4
-                    a(href="/Modificar", class="text-decoration-none")
-                        .card.h-100.shadow.text-center
-                            i.fa-solid.fa-user-pen.fa-4x.text-info.mt-4
-                            .card-body
-                                h5.card-title.text-info Modificar o Actualizar
-                                p.card-text Modificar o actualizar datos del paciente
-                .col-md-3.mb-4
-                  // Botón para abrir el modal de gestión de turnos
-                  a(href="#", class="text-decoration-none", data-bs-toggle="modal", data-bs-target="#turnoModal")
-                    .card.h-100.shadow.text-center
-                      i.fa-solid.fa-calendar-check.fa-4x.text-info.mt-4
-                      .card-body
-                        h5.card-title.text-info Gestión de turno
-                        p.card-text Verifica los turnos de los pacientes ó asigna uno nuevo
+        .row.mt-4
+          .col-12.mb-4
+            h3.text-info.mb-3 Selecciona una cama disponible
+            #habitacionesContainer.row.g-3
+        input(name="ID_Paciente" id="ID_Paciente")
+        input(type="hidden" id="camaIdOculto" name="ID_Cama")
+        input(type="hidden" name="dni" id="dniOculto")
+        button(type="submit", class="btn btn-success mt-3") Asignar habitación
+      #mensaje-exito.alert.alert-success.d-none(role="alert")
+      script.
+        async function buscarPaciente() {
+          const dni = document.getElementById('dni').value;
+          if (!dni) return alert('Por favor ingrese un DNI.');
+          try {
+            const response = await fetch(`/modelo/paciente/${dni}`);
+            if (!response.ok) return alert('Paciente no encontrado.');
+            const paciente = await response.json();
+            document.querySelector('input[name="nombre"]').value = paciente.Nombre;
+            document.querySelector('input[name="apellido"]').value = paciente.Apellido;
+            document.querySelector('input[name="ID_Paciente"]').value = paciente.id;
+            document.querySelector('input[name="Genero"]').value = paciente.Genero;
+            document.getElementById('dniOculto').value = dni; // guarda el DNI en input hidden
+          } catch (error) {
+            alert('Error al buscar paciente.');
+          }
+        }
 
-                  // Modal de gestión de turnos
-                  .modal.fade#turnoModal(tabindex="-1", aria-labelledby="turnoModalLabel", aria-hidden="true")
-                    .modal-dialog
-                      .modal-content
-                        .modal-header
-                          h5.modal-title#turnoModalLabel Gestión de Turnos
-                          button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
-                        .modal-body.m-0.p-0
-                          form#turnoForm
-                            .mb-3
-                              label.form-label(for="dni_paciente") DNI del paciente
-                              input.form-control(type="text", id="dni_paciente", name="dni_paciente", placeholder="DNI del paciente")
-                            .mb-3
-                              label.form-label(for="medico") Médico
-                              select.form-control(id="medico", name="medico")
-                                option(value="" selected disabled) Seleccione un médico
-                                option(value="Dr. Juan Pérez") Dr. Juan Pérez
-                                option(value="Dra. Ana Gómez") Dra. Ana Gómez
-                                option(value="Dr. Carlos Ruiz") Dr. Carlos Ruiz
-                                option(value="Dra. Laura Fernández") Dra. Laura Fernández
-                            .mb-3
-                              label.form-label(for="fecha") Fecha
-                              input.form-control(type="date", id="fecha", name="fecha")
-                            .mb-3
-                              label.form-label(for="hora") Hora
-                              input.form-control(type="time", id="hora", name="hora")
-                            .d-flex.justify-content-between
-                              button.btn.btn-primary.m-3(type="submit") Asignar Turno
-                              button.btn.btn-info.m-3(type="button", id="verTurnoBtn") Ver Turno
+        async function buscarHabitacion() {
+          const ala = document.getElementById('ala').value;
+          const tipo = document.getElementById('tipo').value;
+          const genero = document.getElementById('Genero').value;
 
-                  script.
-                    // Ejemplo de manejo básico del formulario (puedes adaptar a tus necesidades)
-                    document.addEventListener('DOMContentLoaded', function() {
-                      const form = document.getElementById('turnoForm');
-                      const verBtn = document.getElementById('verTurnoBtn');
-                      form.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        alert('Turno asignado (simulado)');
-                      });
-                      verBtn.addEventListener('click', function() {
-                        alert('Ver turno del paciente (simulado)');
-                      });
-                    });
+          if (!ala || !tipo) {
+            return alert('Por favor seleccione un ala y tipo de habitación.');
+          }
+
+          try {
+            const response = await fetch(`/habitaciones/buscar?ala=${ala}&tipo=${tipo}&genero=${genero}`);
+            const habitaciones = await response.json();
+            const container = document.getElementById('habitacionesContainer');
+            container.innerHTML = '';
+            
+            habitaciones.forEach(habitacion => {
+              const card = document.createElement('div');
+              card.className = 'col-md-6';
+              card.innerHTML = `
+                <div class="card shadow-sm mb-2">
+                  <div class="card-header bg-light">
+                    <strong class="text-secondary">Habitación ${habitacion.Numero}</strong>
+                  </div>
+                  <div class="card-body d-flex flex-wrap gap-3">
+                    ${habitacion.camas.map(cama => `
+                      <label class="cama-selector" style="cursor:pointer;">
+                        <input type="radio" name="cama" value="${cama.ID}" required ${!cama.disponible ? 'disabled' : ''} style="display:none;">
+                        <i class="fa-solid fa-bed fa-2x ${cama.disponible ? 'text-success' : 'text-danger'} me-2" title="${cama.disponible ? 'Cama disponible' : 'Cama ocupada'}" ${!cama.disponible ? 'style="opacity:0.5;"' : ''}></i>
+                        <span>${cama.nombre}</span>
+                      </label>
+                    `).join('')}
+                  </div>
+                </div>
+              `;
+              container.appendChild(card);
+            });
+
+            // Agregar listeners para actualizar el input hidden con el ID de cama
+            document.querySelectorAll('input[name="cama"]').forEach(input => {
+              input.addEventListener('change', function () {
+                document.getElementById('camaIdOculto').value = this.value;
+              });
+            });
+
+          } catch (error) {
+            alert('Error al buscar habitaciones.');
+          }
+
+          document.getElementById('form-asignacion').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const datos = new FormData(form);
+            const valores = Object.fromEntries(datos.entries());
+
+            try {
+              const res = await fetch('/habitaciones/asignar-habitacion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(valores)
+              });
+
+              const data = await res.json();
+
+              if (data.success) {
+                const mensaje = document.getElementById('mensaje-exito');
+                mensaje.textContent = data.mensaje;
+                mensaje.classList.remove('d-none');
+
+                form.reset();
+                document.getElementById('habitacionesContainer').innerHTML = '';
+              } else {
+                alert('Error: ' + data.error);
+              }
+            } catch (err) {
+              alert('Hubo un error: ' + err.message);
+            }
+          });  
+        }
+      style.
+        .cama-selector input[type="radio"]:checked + .fa-bed {
+          color: #0dcaf0 !important;
+          text-shadow: 0 0 8px #0dcaf0;
+        }
+    
+    .row.justify-content-center
+        .col-md-3.mb-4
+            a(href="/recepcionista", class="text-decoration-none")
+                .card.h-100.shadow.text-center
+                    i.fa-solid.fa-hospital-user.fa-4x.text-info.mt-4
+                    .card-body
+                        h5.card-title.text-info Volver a Recepción
+                        p.card-text Regresar a la página de recepción.
+        .col-md-3.mb-4
+            a(href="/Modificar", class="text-decoration-none")
+                .card.h-100.shadow.text-center
+                    i.fa-solid.fa-user-pen.fa-4x.text-info.mt-4
+                    .card-body
+                        h5.card-title.text-info Modificar o Actualizar
+                        p.card-text Modificar o actualizar datos del paciente
+        .col-md-3.mb-4
+          // Botón para abrir el modal de gestión de turnos
+          a(href="#", class="text-decoration-none", data-bs-toggle="modal", data-bs-target="#turnoModal")
+            .card.h-100.shadow.text-center
+              i.fa-solid.fa-calendar-check.fa-4x.text-info.mt-4
+              .card-body
+                h5.card-title.text-info Gestión de turno
+                p.card-text Verifica los turnos de los pacientes ó asigna uno nuevo
+
+          // Modal de gestión de turnos
+          .modal.fade#turnoModal(tabindex="-1", aria-labelledby="turnoModalLabel", aria-hidden="true")
+            .modal-dialog
+              .modal-content
+                .modal-header
+                  h5.modal-title#turnoModalLabel Gestión de Turnos
+                  button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+                .modal-body.m-0.p-0
+                  form#turnoForm
+                    .mb-3
+                      label.form-label(for="dni_paciente") DNI del paciente
+                      input.form-control(type="text", id="dni_paciente", name="dni_paciente", placeholder="DNI del paciente")
+                    .mb-3
+                      label.form-label(for="medico") Médico
+                      select.form-control(id="medico", name="medico")
+                        option(value="" selected disabled) Seleccione un médico
+                        option(value="Dr. Juan Pérez") Dr. Juan Pérez
+                        option(value="Dra. Ana Gómez") Dra. Ana Gómez
+                        option(value="Dr. Carlos Ruiz") Dr. Carlos Ruiz
+                        option(value="Dra. Laura Fernández") Dra. Laura Fernández
+                    .mb-3
+                      label.form-label(for="fecha") Fecha
+                      input.form-control(type="date", id="fecha", name="fecha")
+                    .mb-3
+                      label.form-label(for="hora") Hora
+                      input.form-control(type="time", id="hora", name="hora")
+                    .d-flex.justify-content-between
+                      button.btn.btn-primary.m-3(type="submit") Asignar Turno
+                      button.btn.btn-info.m-3(type="button", id="verTurnoBtn") Ver Turno
+
+          script.
+            // Ejemplo de manejo básico del formulario (puedes adaptar a tus necesidades)
+            document.addEventListener('DOMContentLoaded', function() {
+              const form = document.getElementById('turnoForm');
+              const verBtn = document.getElementById('verTurnoBtn');
+              form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Turno asignado (simulado)');
+              });
+              verBtn.addEventListener('click', function() {
+                alert('Ver turno del paciente (simulado)');
+              });
+            });

@@ -70,7 +70,7 @@ exports.crearPaciente = async function(req, res) {
         formData: req.body
       });
     } catch (error) {
-      console.error('Error al cargar datos del formulario:', error);
+      console.error('Error al cargar datos del formulario!:', error);
       return res.status(500).send('Error al cargar formulario');
     }
   }
@@ -93,16 +93,74 @@ exports.crearPaciente = async function(req, res) {
       plan_id,
       numero_afiliado
     });
-    console.log("Datos del paciente a guardar:", objetoPaciente);
-    res.redirect('/admision');
+      const nacionalidades = await Nacionalidad.findAll();
+      const obrasSociales = await ObraSocial.findAll();
+      res.render('nuevopaciente', {
+      exito: 'Paciente registrado correctamente.',
+      nacionalidad: nacionalidades,
+      obra_social: obrasSociales,
+      formData: {} 
+    });
   } catch (error) {
-    if (error.errors) {
-      for (let err of error.errors) {
-        console.error(`${err.path}: ${err.message}`);
-      }
-    }
     console.error("Error al guardar paciente:", error);
-    res.status(500).send("No se pudo registrar el paciente.");
+
+    const nacionalidades = await Nacionalidad.findAll();
+    const obrasSociales = await ObraSocial.findAll();
+
+    let errores = ['No se pudo registrar el paciente.'];
+
+    // Si Sequelize trae errores específicos, se agregan
+    if (error.errors) {
+      errores = error.errors.map(err => err.message);
+    }
+
+    return res.render('nuevopaciente', {
+      errores,
+    });
+  }
+};
+
+exports.buscarPorDNI = async (req, res) => {
+  const dni = req.params.dni;
+  try {
+    const paciente = await Paciente.findOne({ where: { DNI: dni } });
+
+    if (!paciente) {
+      return res.status(404).json({ mensaje: 'Paciente no encontrado' });
+    }
+
+    const plain = paciente.get({ plain: true });
+    plain.FechaNacimiento = plain.FechaNacimiento.toISOString().split('T')[0]; // YYYY-MM-DD
+
+    res.json(plain); // ✅ solo una vez
+  } catch (error) {
+    console.error('Error al buscar paciente:', error);
+    res.status(500).json({ mensaje: 'Error en el servidor' });
+  }
+};
+
+exports.actualizarPaciente = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const paciente = await Paciente.findByPk(id);
+    if (!paciente) return res.status(404).send('Paciente no encontrado');
+    console.log(req.body);
+    await paciente.update(req.body);
+    res.redirect('/registro'); // o donde vos prefieras
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error al actualizar paciente');
+  }
+};
+
+exports.eliminarPaciente = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await Paciente.destroy({ where: { id } });
+    res.redirect('/registro');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error al eliminar paciente');
   }
 };
 

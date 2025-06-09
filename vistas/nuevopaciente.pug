@@ -21,28 +21,21 @@ html(lang="en")
 
     .container
         - const data = typeof formData !== 'undefined' ? formData : {}
-        form(action='/pacientes/buscar' method='POST')
-          label(for='dniBuscar') Buscar por DNI:
-          input(type='text' name='dniBuscar' required value=dniBuscado || '')
-          button(type='submit') Buscar
-        hr
-        h1.text-center.text-info Paciente
+        h1.text-center.text-info Nuevo paciente para internación
+        p Busca el paciente por DNI para verificar si ya está registrado:
+        .row
+          .col-md-4
+            label(for="dni") DNI:
+            input(type="text" name="dni" id="dni" required)
+          .col-md-4
+            button(type="button" onclick="buscarPaciente()") Buscar paciente
         p Complete el siguiente formulario para registrarlo:
-        if errores && errores.length
-          // Modal de errores
-          .modal.fade.show(style="display: block;" tabindex="-1" role="dialog")
-            .modal-dialog
-              .modal-content
-                .modal-header.bg-danger.text-white
-                  h5.modal-title Errores en el formulario
-                  button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Cerrar")
-                .modal-body
-                  ul
-                    each err in errores
-                      li= err
-                .modal-footer
-                  button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cerrar
-        form(action="/nuevopaciente" method="POST").p-0
+        if exito
+          .alert.alert-success(role='alert')= exito
+        if errores
+          each error in errores
+            .alert.alert-danger(role='alert')= error
+        form(action=data.id ? `/pacientes/editar/${data.id}` : "/registro/nuevopaciente", method="POST").p-0
           .row
             .col-sm-6
               label(for="Nombre") Nombre:
@@ -68,7 +61,7 @@ html(lang="en")
               label(for="FechaNacimiento") Fecha de nacimiento:
               input(type="date", name="FechaNacimiento", required, value=data.FechaNacimiento || '')
           label Correo electrónico:
-          input(type="email" name="Email" required)
+          input(type="email" name="Email" required value=data.Email || '')
           .row
             .col-sm-6
               label(for="ID_Nacionalidad") Lugar de nacimiento:
@@ -123,110 +116,161 @@ html(lang="en")
             input(type="hidden" id="campoObraSocial" name="ID_Obra_social" value=data.ID_Obra_social || '')
             input(type="hidden" id="campoPlan" name="plan_id" value=data.plan_id || '')
             input(type="hidden" id="campoAfiliado" name="numero_afiliado" value=data.numero_afiliado || '')
-        if paciente
-          button(type='submit' formaction=`/pacientes/editar/${paciente.id}`) Modificar
-          button(type='submit' formaction=`/pacientes/eliminar/${paciente.id}`) Eliminar
-        else
-          button(type="submit").mb-5 Registrar paciente
-          script.
-            document.addEventListener('DOMContentLoaded', () => {
-              const obraSelect = document.getElementById('ID_Obra_social_tmp');
-              const planSelect = document.getElementById('plan_id_tmp');
-
-              obraSelect.addEventListener('change', async () => {
-                const obraId = obraSelect.value;
-                planSelect.innerHTML = '<option value="">Cargando planes...</option>';
-
-                if (!obraId) return;
-                try {
-                  const response = await fetch(`/api/planes/${obraId}`);
-                  const planes = await response.json();
-
-                  planSelect.innerHTML = '<option value="" disabled selected>Seleccione un plan</option>';
-
-                  planes.forEach(plan => {
-                    const option = document.createElement('option');
-                    option.value = plan.id;
-                    option.textContent = plan.nombre_plan;
-                    planSelect.appendChild(option);
-                  });
-                } catch (err) {
-                  console.error('Error al cargar planes:', err);
-                  planSelect.innerHTML = '<option value="">Error al cargar planes</option>';
-                }
-              });
-            });
-            function guardarObraSocial() {
-              const obra = document.getElementById("ID_Obra_social_tmp").value;
-              const plan = document.getElementById("plan_id_tmp").value;
-              const numero = document.getElementById("numero_afiliado_tmp").value;
-              console.log("Obra:", obra);
-              console.log("Plan:", plan);
-              console.log("Afiliado:", numero);
-              document.getElementById("campoObraSocial").value = obra;
-              document.getElementById("campoPlan").value = plan;
-              document.getElementById("campoAfiliado").value = numero;
-            }
-            //console.log("Paciente registrado correctamente", nombre, apellido, dni, telefono, fecha_nacimiento, email, lugar_nacimiento, direccion, contacto_emergencia, obra_social);  S
-          .row.justify-content-center
-            .col-md-3.mb-4
-              a(href="/recepcionista", class="text-decoration-none")
-                .card.h-100.shadow.text-center
-                  i.fa-solid.fa-hospital-user.fa-4x.text-info.mt-4
-                  .card-body
-                    h5.card-title.text-info Volver a Recepción
-                    p.card-text Regresar a la página de recepción.
-            .col-md-3.mb-4
-              a(href="/Admision", class="text-decoration-none")
-                .card.h-100.shadow.text-center
-                  i.fa-solid.fa-bed.fa-4x.text-info.mt-4
-                  .card-body
-                    h5.card-title.text-info Admisión de Paciente
-                    p.card-text Admisión de paciente para internación.
-            .col-md-3.mb-4
-              a(href="/Modificar", class="text-decoration-none")
-                .card.h-100.shadow.text-center
-                  i.fa-solid.fa-user-pen.fa-4x.text-info.mt-4
-                  .card-body
-                    h5.card-title.text-info Modificar o Actualizar
-                    p.card-text Modificar o actualizar datos del paciente
-            .col-md-3.mb-4
-              // Botón para abrir el modal de gestión de turnos
-              a(href="#", class="text-decoration-none", data-bs-toggle="modal", data-bs-target="#turnoModal")
-                .card.h-100.shadow.text-center
-                  i.fa-solid.fa-calendar-check.fa-4x.text-info.mt-4
-                  .card-body
-                    h5.card-title.text-info Gestión de turno
-                    p.card-text Verifica los turnos de los pacientes ó asigna uno nuevo
-
-              // Modal de gestión de turnos
-              .modal.fade#turnoModal(tabindex="-1", aria-labelledby="turnoModalLabel", aria-hidden="true")
-                .modal-dialog
-                  .modal-content
-                    .modal-header
-                      h5.modal-title#turnoModalLabel Gestión de Turnos
-                      button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
-                    .modal-body.m-0.p-0
-                      form#turnoForm
-                        .mb-3
-                          label.form-label(for="dni_paciente") DNI del paciente
-                          input.form-control(type="text", id="dni_paciente", name="dni", placeholder="DNI del paciente")
-                        .mb-3
-                          label.form-label(for="medico") Médico
-                          select.form-control(id="medico", name="medico")
-                            option(value="" selected disabled) Seleccione un médico
-                            option(value="Dr. Juan Pérez") Dr. Juan Pérez
-                            option(value="Dra. Ana Gómez") Dra. Ana Gómez
-                            option(value="Dr. Carlos Ruiz") Dr. Carlos Ruiz
-                            option(value="Dra. Laura Fernández") Dra. Laura Fernández
-                        .mb-3
-                          label.form-label(for="fecha") Fecha
-                          input.form-control(type="date", id="fecha", name="fecha")
-                        .mb-3
-                          label.form-label(for="hora") Hora
-                          input.form-control(type="time", id="hora", name="hora")
-                        .d-flex.justify-content-between
-                          button.btn.btn-primary.m-3(type="submit") Asignar Turno
-                          button.btn.btn-info.m-3(type="button", id="verTurnoBtn") Ver Turno
-
+          .row
+            .col-sm-6
+              button(type="submit").mb-5= data.id ? 'Actualizar paciente' : 'Registrar paciente'
+        form#formEliminarPaciente(action="/pacientes/eliminar/" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este paciente?')").mt-2(style="display: none;")
+          button.btn.btn-danger(type="submit") Eliminar paciente
+              
           
+
+        .row.justify-content-center
+          .col-md-3.mb-4
+            a(href="/recepcionista", class="text-decoration-none")
+              .card.h-100.shadow.text-center
+                i.fa-solid.fa-hospital-user.fa-4x.text-info.mt-4
+                .card-body
+                  h5.card-title.text-info Volver a Recepción
+                  p.card-text Regresar a la página de recepción.
+          .col-md-3.mb-4
+            a(href="/Admision", class="text-decoration-none")
+              .card.h-100.shadow.text-center
+                i.fa-solid.fa-bed.fa-4x.text-info.mt-4
+                .card-body
+                  h5.card-title.text-info Admisión de Paciente
+                  p.card-text Admisión de paciente para internación.
+          .col-md-3.mb-4
+            a(href="/Modificar", class="text-decoration-none")
+              .card.h-100.shadow.text-center
+                i.fa-solid.fa-user-pen.fa-4x.text-info.mt-4
+                .card-body
+                  h5.card-title.text-info Modificar o Actualizar
+                  p.card-text Modificar o actualizar datos del paciente
+          .col-md-3.mb-4
+            // Botón para abrir el modal de gestión de turnos
+            a(href="#", class="text-decoration-none", data-bs-toggle="modal", data-bs-target="#turnoModal")
+              .card.h-100.shadow.text-center
+                i.fa-solid.fa-calendar-check.fa-4x.text-info.mt-4
+                .card-body
+                  h5.card-title.text-info Gestión de turno
+                  p.card-text Verifica los turnos de los pacientes ó asigna uno nuevo
+
+            // Modal de gestión de turnos
+            .modal.fade#turnoModal(tabindex="-1", aria-labelledby="turnoModalLabel", aria-hidden="true")
+              .modal-dialog
+                .modal-content
+                  .modal-header
+                    h5.modal-title#turnoModalLabel Gestión de Turnos
+                    button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+                  .modal-body.m-0.p-0
+                    form#turnoForm
+                      .mb-3
+                        label.form-label(for="dni_paciente") DNI del paciente
+                        input.form-control(type="text", id="dni_paciente", name="dni", placeholder="DNI del paciente")
+                      .mb-3
+                        label.form-label(for="medico") Médico
+                        select.form-control(id="medico", name="medico")
+                          option(value="" selected disabled) Seleccione un médico
+                          option(value="Dr. Juan Pérez") Dr. Juan Pérez
+                          option(value="Dra. Ana Gómez") Dra. Ana Gómez
+                          option(value="Dr. Carlos Ruiz") Dr. Carlos Ruiz
+                          option(value="Dra. Laura Fernández") Dra. Laura Fernández
+                      .mb-3
+                        label.form-label(for="fecha") Fecha
+                        input.form-control(type="date", id="fecha", name="fecha")
+                      .mb-3
+                        label.form-label(for="hora") Hora
+                        input.form-control(type="time", id="hora", name="hora")
+                      .d-flex.justify-content-between
+                        button.btn.btn-primary.m-3(type="submit") Asignar Turno
+                        button.btn.btn-info.m-3(type="button", id="verTurnoBtn") Ver Turno
+        script.
+          // Script para cargar los planes de la obra social seleccionada
+          document.addEventListener('DOMContentLoaded', () => {
+            const obraSelect = document.getElementById('ID_Obra_social_tmp');
+            const planSelect = document.getElementById('plan_id_tmp');
+
+            obraSelect.addEventListener('change', async () => {
+              const obraId = obraSelect.value;
+              planSelect.innerHTML = '<option value="">Cargando planes...</option>';
+
+              if (!obraId) return;
+              try {
+                const response = await fetch(`/api/planes/${obraId}`);
+                const planes = await response.json();
+
+                planSelect.innerHTML = '<option value="" disabled selected>Seleccione un plan</option>';
+
+                planes.forEach(plan => {
+                  const option = document.createElement('option');
+                  option.value = plan.id;
+                  option.textContent = plan.nombre_plan;
+                  planSelect.appendChild(option);
+                });
+              } catch (err) {
+                console.error('Error al cargar planes:', err);
+                planSelect.innerHTML = '<option value="">Error al cargar planes</option>';
+              }
+            });
+          });
+          // Función para buscar un paciente por DNI
+          async function buscarPaciente() {
+            const dni = document.getElementById('dni').value;
+            if (!dni) return alert('Por favor ingrese un DNI.');
+            try {
+              const response = await fetch(`/modelo/paciente/${dni}`);
+              if (!response.ok) return alert('Paciente no encontrado.');
+              const paciente = await response.json();
+              document.querySelector('input[name="Nombre"]').value = paciente.Nombre;
+              document.querySelector('input[name="Apellido"]').value = paciente.Apellido;
+              document.querySelector('input[name="DNI"]').value = paciente.DNI;
+              document.querySelector('input[name="Telefono"]').value = paciente.Telefono;
+              document.querySelector('input[name="FechaNacimiento"]').value = paciente.FechaNacimiento;
+              document.querySelector('input[name="Email"]').value = paciente.Email;
+              document.querySelector('input[name="Direccion"]').value = paciente.Direccion;
+              document.querySelector('input[name="Contacto_emergencia"]').value = paciente.Contacto_emergencia;
+              document.querySelector('select[name="ID_Nacionalidad"]').value = paciente.ID_Nacionalidad;
+              document.querySelector('select[name="ID_Obra_social_tmp"]').value = paciente.ID_Obra_social || '';
+              document.querySelector('select[name="plan_id_tmp"]').value = paciente.plan_id || '';
+              document.querySelector('input[name="numero_afiliado_tmp"]').value = paciente.numero_afiliado || '';
+              document.querySelector('input[name="obra_social"][value="' + (paciente.ID_Obra_social ? 'si' : 'no') + '"]').checked = true;
+              // Disparar el evento change para cargar los planes
+              const eventoCambio = new Event('change');
+              document.querySelector('#ID_Obra_social_tmp').dispatchEvent(eventoCambio);
+              // Esperar que se carguen los planes antes de setear el value
+              setTimeout(() => {
+                document.querySelector('#plan_id_tmp').value = paciente.plan_id || '';
+              }, 50);
+              // Crear o actualizar campo oculto para el ID
+              let idInput = document.querySelector('input[name="id"]');
+              if (!idInput) {
+                idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'id';
+                document.querySelector('form').appendChild(idInput);
+              }
+              idInput.value = paciente.id;
+              // Mostrar el botón de eliminar paciente
+              document.getElementById("formEliminarPaciente").action = `/paciente/eliminar/${paciente.id}`;
+              document.getElementById("formEliminarPaciente").style.display = "block";
+
+              // También actualizá el formulario de edición si no tiene el `action` correcto
+              document.querySelector('form').action = `/paciente/editar/${paciente.id}`;
+              document.querySelector('button[type="submit"]').textContent = 'Actualizar paciente';
+            } catch (error) {
+              alert('Error al buscar paciente.');
+            }
+          }
+          // Función para guardar la obra social seleccionada
+          function guardarObraSocial() {
+            const obra = document.getElementById("ID_Obra_social_tmp").value;
+            const plan = document.getElementById("plan_id_tmp").value;
+            const numero = document.getElementById("numero_afiliado_tmp").value;
+            console.log("Obra:", obra);
+            console.log("Plan:", plan);
+            console.log("Afiliado:", numero);
+            document.getElementById("campoObraSocial").value = obra;
+            document.getElementById("campoPlan").value = plan;
+            document.getElementById("campoAfiliado").value = numero;
+          }
+        
