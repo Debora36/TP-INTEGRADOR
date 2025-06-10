@@ -28,7 +28,7 @@ html(lang="en")
             label(for="dni") DNI:
             input(type="text" name="dni" id="dni" required)
           .col-md-4
-            button(type="button" onclick="buscarPaciente()") Buscar paciente
+            button(type="button" class="btn btn-primary w-100" onclick="buscarPaciente()").mt-4 Buscar paciente
         p Complete el siguiente formulario para registrarlo:
         if exito
           .alert.alert-success(role='alert')= exito
@@ -76,14 +76,8 @@ html(lang="en")
             .col-sm-6
               label(for="Contacto_emergencia") Contacto de emergencia:
               input(type="text", name="Contacto_emergencia", required, pattern="^\+\d{1,3}\d{9}$", title="Ingrese un número valido con codigo de área y sin guiones ni espacios", value=data.Contacto_emergencia || '')
-            .col-sm-6.mb-4
-              label(for="obra_social") ¿Tiene obra social?
-              .form-check.form-check-inline.ms-3
-                input.form-check-input.ms-3(type="radio" name="obra_social" id="obra_social_si" value="si" required checked=(data.ID_Obra_social ? true : false))
-                label.form-check-label.ms-2(for="obra_social_si") Sí
-              .form-check.form-check-inline
-                input.form-check-input(type="radio" name="obra_social" id="obra_social_no" value="no" checked=(!data.ID_Obra_social))
-                label.form-check-label.ms-2(for="obra_social_no") No
+            .col-sm-6
+              label Obra social:
               button.btn.btn-outline-info.p-2(type="button" data-bs-toggle="modal" data-bs-target="#modalObraSocial") Cargar obra social
 
               // Modal
@@ -118,8 +112,8 @@ html(lang="en")
             input(type="hidden" id="campoAfiliado" name="numero_afiliado" value=data.numero_afiliado || '')
           .row
             .col-sm-6
-              button(type="submit").mb-5= data.id ? 'Actualizar paciente' : 'Registrar paciente'
-        form#formEliminarPaciente(action="/pacientes/eliminar/" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este paciente?')").mt-2(style="display: none;")
+              button(type="submit" class="btn btn-primary w-100").mb-5= data.id ? 'Actualizar paciente' : 'Registrar paciente'
+        form#formEliminarPaciente(action="/pacientes/eliminar/" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este paciente?')" hidden).mt-2
           button.btn.btn-danger(type="submit") Eliminar paciente
               
           
@@ -233,7 +227,7 @@ html(lang="en")
               document.querySelector('select[name="ID_Obra_social_tmp"]').value = paciente.ID_Obra_social || '';
               document.querySelector('select[name="plan_id_tmp"]').value = paciente.plan_id || '';
               document.querySelector('input[name="numero_afiliado_tmp"]').value = paciente.numero_afiliado || '';
-              document.querySelector('input[name="obra_social"][value="' + (paciente.ID_Obra_social ? 'si' : 'no') + '"]').checked = true;
+              //document.querySelector('input[name="obra_social"][value="' + (paciente.ID_Obra_social ? 'si' : 'no') + '"]').checked = true;
               // Disparar el evento change para cargar los planes
               const eventoCambio = new Event('change');
               document.querySelector('#ID_Obra_social_tmp').dispatchEvent(eventoCambio);

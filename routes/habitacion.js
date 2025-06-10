@@ -15,12 +15,12 @@ Habitacion.belongsTo(Ala, { foreignKey: 'ID_Ala' });
 // GET /habitaciones/buscar
 router.get('/habitaciones/buscar', async (req, res) => {
   try {
-    const { ala, tipo, genero } = req.query;
+    const { ala, tipo_habitacion, genero } = req.query;
 
     const habitaciones = await Habitacion.findAll({
       where: {
         ID_Ala: ala,
-        tipo: tipo // 1 = simple, 2 = doble
+        camas_disponibles: tipo_habitacion
       },
       include: [
         {

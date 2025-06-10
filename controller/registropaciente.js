@@ -35,12 +35,16 @@ const path = require('path');
 const Paciente = require(path.resolve(__dirname, '../modelo/paciente'));
 
 exports.crearPaciente = async function(req, res) {
-  const {
+  let {
     DNI, Telefono, FechaNacimiento, Email, Contacto_emergencia,
     Nombre, Apellido, Direccion, Genero,
     ID_Nacionalidad, ID_Obra_social, plan_id, numero_afiliado
   } = req.body;
-
+  
+  // Convertí a null si son cadenas vacías:
+  ID_Obra_social = ID_Obra_social === '' ? null : ID_Obra_social;
+  plan_id = plan_id === '' ? null : plan_id;
+  numero_afiliado = numero_afiliado === '' ? null : numero_afiliado;
   const errores = [];
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const dniRegex = /^[0-9]{7,8}$/;

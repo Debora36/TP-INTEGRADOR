@@ -12,7 +12,7 @@ ID: {
     allowNull: false,
     references: {
       model: 'paciente',
-      key: 'ID'
+      key: 'id'
     }
   },
   ID_Habitacion: {

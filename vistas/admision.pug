@@ -27,15 +27,11 @@ html(lang="en")
           label(for="dni") DNI del paciente:
           input(type="text" name="dni" id="dni" required)
         .col-md-4
-          button(type="button" onclick="buscarPaciente()") Buscar paciente
+          button(type="button" class="btn btn-primary w-100" onclick="buscarPaciente()").mt-4 Buscar paciente
       .row
-        .col-md-6
-          label Nombre:
-          input(type="text" name="nombre" required)
-        .col-md-6
-          label Apellido:
-          input(type="text" name="apellido" required)
-          input(type="text" name="Genero" id="Genero" required)
+        label Paciente encontrado:
+        h2#nombrePaciente.text-primary
+        input(type="hidden" name="Genero" id="Genero" required)
       form#form-asignacion(action="/habitaciones/asignar-habitacion" method="POST").p-0
         .row
           .col-sm-4
@@ -51,13 +47,13 @@ html(lang="en")
               option(value="1") Simple
               option(value="2") Doble
           .col-sm-4
-            button(type="button", class="btn btn-primary w-100", onclick="buscarHabitacion()") Buscar habitaciones
+            button(type="button", class="btn btn-primary w-100", onclick="buscarHabitacion()").mt-4 Buscar habitaciones
 
         .row.mt-4
           .col-12.mb-4
             h3.text-info.mb-3 Selecciona una cama disponible
             #habitacionesContainer.row.g-3
-        input(name="ID_Paciente" id="ID_Paciente")
+        input(type="hidden" name="ID_Paciente" id="ID_Paciente")
         input(type="hidden" id="camaIdOculto" name="ID_Cama")
         input(type="hidden" name="dni" id="dniOculto")
         button(type="submit", class="btn btn-success mt-3") Asignar habitación
@@ -70,8 +66,8 @@ html(lang="en")
             const response = await fetch(`/modelo/paciente/${dni}`);
             if (!response.ok) return alert('Paciente no encontrado.');
             const paciente = await response.json();
-            document.querySelector('input[name="nombre"]').value = paciente.Nombre;
-            document.querySelector('input[name="apellido"]').value = paciente.Apellido;
+            document.getElementById('nombrePaciente').textContent = `${paciente.Nombre} ${paciente.Apellido}`;
+
             document.querySelector('input[name="ID_Paciente"]').value = paciente.id;
             document.querySelector('input[name="Genero"]').value = paciente.Genero;
             document.getElementById('dniOculto').value = dni; // guarda el DNI en input hidden
@@ -79,18 +75,47 @@ html(lang="en")
             alert('Error al buscar paciente.');
           }
         }
+          document.getElementById('form-asignacion').addEventListener('submit', async function (e) {
+            e.preventDefault();
 
+            const form = e.target;
+            const datos = new FormData(form);
+            const valores = Object.fromEntries(datos.entries());
+
+            try {
+              const res = await fetch('/habitaciones/asignar-habitacion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(valores)
+              });
+
+              const data = await res.json();
+
+              if (data.success) {
+                const mensaje = document.getElementById('mensaje-exito');
+                mensaje.textContent = data.mensaje;
+                mensaje.classList.remove('d-none');
+
+                form.reset();
+                document.getElementById('habitacionesContainer').innerHTML = '';
+              } else {
+                alert('Error: ' + data.error);
+              }
+            } catch (err) {
+              alert('Hubo un error: ' + err.message);
+            }
+          }); 
         async function buscarHabitacion() {
+          const genero = document.getElementById('Genero').value;
           const ala = document.getElementById('ala').value;
           const tipo = document.getElementById('tipo').value;
-          const genero = document.getElementById('Genero').value;
 
           if (!ala || !tipo) {
             return alert('Por favor seleccione un ala y tipo de habitación.');
           }
 
           try {
-            const response = await fetch(`/habitaciones/buscar?ala=${ala}&tipo=${tipo}&genero=${genero}`);
+            const response = await fetch(`/habitaciones/buscar?ala=${ala}&tipo_habitacion=${tipo}&genero=${genero}`);
             const habitaciones = await response.json();
             const container = document.getElementById('habitacionesContainer');
             container.innerHTML = '';
@@ -126,38 +151,7 @@ html(lang="en")
 
           } catch (error) {
             alert('Error al buscar habitaciones.');
-          }
-
-          document.getElementById('form-asignacion').addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            const form = e.target;
-            const datos = new FormData(form);
-            const valores = Object.fromEntries(datos.entries());
-
-            try {
-              const res = await fetch('/habitaciones/asignar-habitacion', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(valores)
-              });
-
-              const data = await res.json();
-
-              if (data.success) {
-                const mensaje = document.getElementById('mensaje-exito');
-                mensaje.textContent = data.mensaje;
-                mensaje.classList.remove('d-none');
-
-                form.reset();
-                document.getElementById('habitacionesContainer').innerHTML = '';
-              } else {
-                alert('Error: ' + data.error);
-              }
-            } catch (err) {
-              alert('Hubo un error: ' + err.message);
-            }
-          });  
+          } 
         }
       style.
         .cama-selector input[type="radio"]:checked + .fa-bed {
@@ -220,7 +214,7 @@ html(lang="en")
                       button.btn.btn-info.m-3(type="button", id="verTurnoBtn") Ver Turno
 
           script.
-            // Ejemplo de manejo básico del formulario (puedes adaptar a tus necesidades)
+
             document.addEventListener('DOMContentLoaded', function() {
               const form = document.getElementById('turnoForm');
               const verBtn = document.getElementById('verTurnoBtn');

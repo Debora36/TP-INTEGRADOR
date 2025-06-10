@@ -50,19 +50,18 @@ const sequelize = require('../db');
     },
     ID_Obra_social: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
     },
     plan_id: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
     },
     numero_afiliado: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
     }
   }, {
     tableName: 'paciente',
     timestamps: false
   });
-
   module.exports = Paciente;

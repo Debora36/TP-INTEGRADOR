@@ -1,26 +1,94 @@
 const { Habitacion, Cama, AlaHospital, Internacion, Paciente } = require('../modelo'); 
 const { Op } = require('sequelize');
 
+
+
 exports.buscarHabitaciones = async (req, res) => {
-  const { ala, tipo, genero } = req.query;
+  const { ala, tipo_habitacion, genero } = req.query;
+ 
   try {
     const habitaciones = await Habitacion.findAll({
-      where: { ID_ala_hospital: ala },
+      where: {
+        ID_ala_hospital: ala,
+      },
       include: [
         {
           model: Cama,
           as: 'camas',
-          where: { disponible: true },
-          required: false
-        },
-        {
-          model: AlaHospital,
-          as: 'ala'
+          include: [
+            {
+              model: Internacion,
+              as: 'internacion',
+              required: false,
+              include: [
+                {
+                  model: Paciente,
+                  as: 'paciente',
+                  attributes: ['Genero'],
+                  required: false,
+                }
+              ]
+            }
+          ]
         }
       ]
     });
+    habitaciones.forEach(h => {
+      console.log("Habitación:", h.Numero);
+      h.camas.forEach(c => {
+        console.log(" - Cama:", c.nombre, 
+          "Tiene internación:", !!c.internacion, 
+          "Paciente:", c.internacion?.paciente?.genero);
+      });
+    });
+    
+    const filtradas = habitaciones.filter(habitacion => {
+      const camas = habitacion.camas;
 
-    res.json(habitaciones);
+      const libres = camas.filter(c => !c.internacion).length;
+      const ocupadas = camas.filter(c => c.internacion);
+      console.log("Habitación:", habitacion.Numero);
+console.log("Libres:", libres);
+console.log("Ocupadas:", ocupadas.map(o => o.internacion?.paciente?.genero));
+      const tipoNum = parseInt(tipo_habitacion);
+      if (tipoNum === 1 && habitacion.camas_disponibles === 1) {
+        // Habitaciones simples: al menos una cama libre
+        return libres >= 1;
+      }
+
+      if (tipoNum === 2 && habitacion.camas_disponibles === 2) {
+        // Habitaciones dobles: misma lógica que antes
+        if (libres === 2) return true;
+
+        if (libres === 1 && ocupadas.length === 1) {
+          const generoPaciente = ocupadas[0].internacion?.paciente?.Genero;
+          return generoPaciente === genero;
+        }
+
+        return false;
+      }
+
+      return false;
+    });
+
+    const respuesta = filtradas.map(habitacion => ({
+      ID: habitacion.ID,
+      Numero: habitacion.Numero,
+      camas: habitacion.camas.map(cama => ({
+        ID: cama.ID,
+        nombre: cama.nombre,
+        disponible: !cama.internacion
+      }))
+    }));
+    habitaciones.forEach(h => {
+    console.log("Habitación:", h.Numero);
+    h.camas.forEach(c => {
+      const genero = c.internacion?.paciente?.genero;
+      console.log(` - Cama: ${c.nombre}, paciente: ${genero ?? 'NO DEFINIDO'}`);
+    });
+  });
+    res.json(respuesta);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al buscar habitaciones' });
