@@ -47,7 +47,7 @@ const logoutRouter = require('./routes/logout');
 const rutasAPI = require('./routes/api');
 const pacienteRoutes = require('./routes/paciente');
 const habitacionesRoutes = require('./routes/habitaciones');
-
+const internacionRoutes = require('./routes/internacion');
 // Usar rutas
 app.use('/modelo/paciente', pacienteRoutes);
 app.use('/paciente', pacienteRoutes);
@@ -57,6 +57,11 @@ app.use('/login', loginRouter);
 app.use('/logout', logoutRouter);
 app.use('/habitaciones', habitacionesRoutes);
 app.use(rutasAPI);
+app.use('/internacion', internacionRoutes);
+// Ruta de redirección temporal (por ejemplo desde el menú)
+app.get('/modificar-internaciones', (req, res) => {
+  res.redirect('/internacion/modificar');
+});
 
 // Vistas protegidas
 app.get('/recepcionista', verificarSesion, (req, res) => {
@@ -85,6 +90,9 @@ require('./modelo/nacionalidad');
 require('./modelo/plan_obra_social');
 require('./modelo/ala_hospital');
 require('./modelo/usuario');
+require('./modelo/habitacion');
+require('./modelo/cama');
+require('./modelo/internacion');
 
 sequelize.authenticate()
   .then(() => console.log('Conexión a la base de datos exitosa.'))
