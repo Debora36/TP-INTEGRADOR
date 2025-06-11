@@ -20,9 +20,6 @@ Internacion.belongsTo(Cama, { foreignKey: 'ID_Cama', as: 'cama' });
 Internacion.belongsTo(Paciente, { foreignKey: 'ID_Paciente', as: 'paciente' });
 Paciente.hasMany(Internacion, { foreignKey: 'ID_Paciente', as: 'internacion' });
 
-// Internacion pertenece a Habitacion
-Internacion.belongsTo(Habitacion, { foreignKey: 'ID_Habitacion' });
-
 // Exportar todos los modelos
 module.exports = {
   Habitacion,
