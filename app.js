@@ -57,7 +57,7 @@ app.use('/login', loginRouter);
 app.use('/logout', logoutRouter);
 app.use('/habitaciones', habitacionesRoutes);
 app.use(rutasAPI);
-
+app.use('/Modificar', require('./routes/modificar'));
 // Vistas protegidas
 app.get('/recepcionista', verificarSesion, (req, res) => {
   res.render('recepcion', { usuario: req.session.usuario });
