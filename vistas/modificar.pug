@@ -20,12 +20,12 @@ html(lang="en")
                         i.fas.fa-sign-out-alt.text-white.mt-4
         .container
             block content
-                h1 Buscar Internaciones
+                h1.text-center.text-info.mt-3 Buscar Internaciones
 
-                form(action="/modificar/buscar", method="POST")
+                form(action="/modificar/buscar", method="POST").pt-1
                     .mb-3
                         label.form-label DNI del paciente:
-                        input.form-control(type="text", name="dni", required)
+                        input(type="text", name="dni", id="dni", value=DNI || '')
                     button.btn.btn-primary(type="submit") Buscar
 
                 if internaciones.length
@@ -39,37 +39,26 @@ html(lang="en")
                             th Acciones
                         tbody
                             each internacion in internaciones
-                                tr(data-id=internacion.id)
+                                tr(data-id=internacion.ID)
                                     td
-                                        select.form-select.select-ala(name="ala", disabled)
-                                            each ala in alas
-                                                option(
-                                                    value=ala.id,
-                                                    selected=(internacion.Habitacion && internacion.habitacion.ala && internacion.habitacion.ala.id == ala.id)
-                                                )= ala.nombre_ala
+                                        input.form-control(type="text", readonly, value=internacion.habitacion.ala.nombre_ala)
                                     td
-                                        select.form-select.select-habitacion(name="habitacion", disabled)
-                                            each hab in habitaciones
-                                                option(
-                                                    value=hab.id,
-                                                    selected=(internacion.habitacion && internacion.habitacion.id == hab.id)
-                                                )= hab.numero
+                                        input.form-control(type="text", readonly, value=internacion.habitacion.Numero)
                                     td
-                                        select.form-select.select-cama(name="cama", disabled)
-                                            each cama in camas
-                                                option(
-                                                    value=cama.id,
-                                                    selected=(internacion.cama && internacion.cama.id == cama.id)
-                                                )= cama.nombre
+                                        input.form-control(type="text", readonly, value=internacion.cama.nombre)
                                     td
                                         input.form-control.fecha(type="date", value=internacion.FechaIngreso.toISOString().split('T')[0], readonly)
                                     td
-                                        button.btn.btn-warning.btn-sm.editar(type="button") Modificar
-                                        button.btn.btn-danger.btn-sm.eliminar(type="button") Eliminar
+                                        form(action="/admision/editar" method="GET").p-0
+                                            input(type="hidden", name="dni", value=DNI)
+                                            input(type="hidden", name="fecha", value=internacion.FechaIngreso.toISOString())
+                                            button.btn-editar.btn.btn-success(type="submit" data-id=internacion.id data-fecha=internacion.FechaIngreso data-dni=dni) Editar
+                                        button.btn.btn-danger.btn.eliminar(type="button") Eliminar
+                                   
         .container
             .row.justify-content-center
                 .col-md-3.mb-4
-                    a(href="/recepcionista" class="text-decoration-none")
+                    a(href="/recepcionista" class="text-decoration-none h-100")
                         .card.h-100.shadow.text-center
                             i.fa-solid.fa-hospital-user.fa-4x.text-info.mt-4
                             .card-body
@@ -77,7 +66,7 @@ html(lang="en")
                                 p.card-text Regresar a la página de recepción.
                 .col-md-3.mb-4
                     // Botón para abrir el modal de gestión de turnos
-                    a(href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#turnoModal")
+                    a(href="#" class="text-decoration-none h-100" data-bs-toggle="modal" data-bs-target="#turnoModal")
                         .card.h-100.shadow.text-center
                             i.fa-solid.fa-calendar-check.fa-4x.text-info.mt-4
                             .card-body
@@ -121,7 +110,7 @@ html(lang="en")
                     const selectHab = fila.querySelector('.select-habitacion');
                     const selectCama = fila.querySelector('.select-cama');
                     const fecha = fila.querySelector('.fecha');
-
+                    const dni = btn.getAttribute('data-dni');
                     const editando = selectAla.disabled === false;
 
                     if (!editando) {

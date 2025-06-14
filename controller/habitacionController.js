@@ -1,8 +1,6 @@
 const { Habitacion, Cama, AlaHospital, Internacion, Paciente } = require('../modelo'); 
 const { Op } = require('sequelize');
 
-
-
 exports.buscarHabitaciones = async (req, res) => {
   const { ala, tipo_habitacion, genero } = req.query;
  
@@ -97,28 +95,55 @@ console.log("Ocupadas:", ocupadas.map(o => o.internacion?.paciente?.genero));
 
 exports.asignarHabitacion = async (req, res) => {
   console.log('Datos del body:', req.body);
-  const { ID_Paciente, ID_Cama } = req.body;
+  const { ID_Paciente, ID_Cama, modoEdicion, ID_internacion} = req.body;
   try {
     const cama = await Cama.findByPk(ID_Cama);
-    console.log('Cama encontrada:', cama?.toJSON?.());
     if (!cama || !cama.disponible) {
       return res.status(400).json({ error: 'Cama no disponible' });
     }
-
-    await Internacion.create({
+    console.log('Insertando internación con:', {
       ID_Paciente,
       ID_Habitacion: cama.ID_Habitacion,
       ID_Cama,
-      FechaIngreso: new Date(),
-      FechaAlta: null
+      FechaIngreso: new Date()
     });
-    console.log('Internacion:', Internacion);
-    cama.disponible = false;
-    await cama.save();
-    
-    res.json({ success: true, mensaje: 'Internación registrada exitosamente.' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error al asignar habitación' });
-  }
-};
+    if (modoEdicion === 'true' && ID_internacion) {
+      // ✅ Modo edición: actualizar internación existente
+      const internacion = await Internacion.findByPk(ID_internacion);
+      if (!internacion) return res.status(404).json({ error: 'Internación no encontrada' });
+
+      // Marcar la cama anterior como disponible
+      const camaAnterior = await Cama.findByPk(internacion.ID_Cama);
+      if (camaAnterior) {
+        camaAnterior.disponible = true;
+        await camaAnterior.save();
+      }
+
+      // Asignar la nueva cama
+      internacion.ID_Cama = ID_Cama;
+      internacion.ID_Habitacion = cama.ID_Habitacion;
+      await internacion.save();
+
+      cama.disponible = false;
+      await cama.save();
+
+      return res.json({ success: true, mensaje: 'Internación modificada correctamente.' });
+    } else {
+      await Internacion.create({
+        ID_Paciente,
+        ID_Habitacion: cama.ID_Habitacion,
+        ID_Cama,
+        FechaIngreso: new Date(),
+        FechaAlta: null
+      });
+      console.log('Internacion:', Internacion);
+      cama.disponible = false;
+      await cama.save();
+      
+      res.json({ success: true, mensaje: 'Internación registrada exitosamente.' });
+    }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al asignar habitación' });
+    }
+  };

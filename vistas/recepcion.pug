@@ -22,29 +22,29 @@ html(lang="en")
     .container.mt-5
         .row.justify-content-center
             .col-md-3.mb-4
-              a(href="/registro", class="text-decoration-none")
+              a(href="/registro", class="text-decoration-none h-100")
                 .card.h-100.shadow.text-center
                   i.fa-solid.fa-user-plus.fa-4x.text-info.mt-4
                   .card-body
-                    h5.card-title.text-info Registrar Paciente
+                    h5.card-title.text-info Registrar o Modificar Paciente
                     p.card-text Registra un nuevo paciente en el sistema.
             .col-md-3.mb-4
-              a(href="/Admision", class="text-decoration-none")
+              a(href="/Admision", class="text-decoration-none h-100")
                 .card.h-100.shadow.text-center
                   i.fa-solid.fa-bed.fa-4x.text-info.mt-4
                   .card-body
                     h5.card-title.text-info Admisión de Paciente
-                    p.card-text Admisión de paciente para internación.
+                    p.card-text Registra la admisión de un paciente en el hospital, asignando una cama y habitación.
             .col-md-3.mb-4
-              a(href="/Modificar", class="text-decoration-none")
+              a(href="/Modificar", class="text-decoration-none h-100")
                 .card.h-100.shadow.text-center
                   i.fa-solid.fa-user-pen.fa-4x.text-info.mt-4
                   .card-body
-                    h5.card-title.text-info Modificar o Actualizar
-                    p.card-text Modificar o actualizar datos del paciente
+                    h5.card-title.text-info Modificar o eliminar admisión
+                    p.card-text Busca la lista de internaciones de un paciente en el hospital y modifica o elimina su admisión.
             .col-md-3.mb-4             
               // Botón para abrir el modal de gestión de turnos
-              a(href="#", class="text-decoration-none", data-bs-toggle="modal", data-bs-target="#turnoModal")
+              a(href="#", class="text-decoration-none h-100", data-bs-toggle="modal", data-bs-target="#turnoModal")
                 .card.h-100.shadow.text-center
                   i.fa-solid.fa-calendar-check.fa-4x.text-info.mt-4
                   .card-body

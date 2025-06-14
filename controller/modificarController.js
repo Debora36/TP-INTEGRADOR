@@ -11,12 +11,15 @@ exports.buscarInternaciones = async (req, res) => {
         internaciones: [],
         alas: [],
         habitaciones: [],
-        camas: []
+        camas: [],
+        DNI
       });
     }
 
     const internaciones = await Internacion.findAll({
+        
       where: { ID_Paciente: paciente.id },
+      attributes: ['ID', 'FechaIngreso', 'ID_Cama', 'ID_Habitacion'],
       include: [
         {
           model: Cama,
@@ -26,7 +29,7 @@ exports.buscarInternaciones = async (req, res) => {
         {
           model: Habitacion,
           as: 'habitacion', 
-          attributes: ['id', 'numero', 'ID_ala_hospital'],
+          attributes: ['id', 'Numero', 'ID_ala_hospital'],
           include: [
             {
               model: AlaHospital,
@@ -46,7 +49,8 @@ exports.buscarInternaciones = async (req, res) => {
       internaciones,
       alas,
       habitaciones,
-      camas
+      camas,
+      DNI: dni
     });
   } catch (error) {
     console.error('Error al buscar internaciones:', error);
@@ -62,7 +66,7 @@ exports.editarInternacion = async (req, res) => {
   const { ID_Cama, ID_Habitacion, FechaIngreso } = req.body;
 
   try {
-    const internacion = await Internacion.findByPk(id);
+    const internacion = await Internacion.findOne({ where: { ID: id } });
     if (!internacion) return res.status(404).send('Internación no encontrada');
 
     internacion.ID_Cama = ID_Cama;
@@ -80,7 +84,18 @@ exports.editarInternacion = async (req, res) => {
 exports.eliminarInternacion = async (req, res) => {
   const { id } = req.params;
   try {
-    await Internacion.destroy({ where: { id } });
+    const internacion = await Internacion.findOne({ where: { ID: id } });
+    
+    if (!internacion) {
+      return res.status(404).send('Internación no encontrada');
+    }
+
+    // Liberar la cama asociada
+    await Cama.update(
+      { disponible: true },
+      { where: { ID: internacion.ID_Cama } }
+    );
+    await Internacion.destroy({ where: { ID: id } });
     res.sendStatus(200);
   } catch (error) {
     console.error('Error al eliminar internación:', error);

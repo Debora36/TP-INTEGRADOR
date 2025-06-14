@@ -21,7 +21,7 @@ html(lang="en")
 
     .container
         - const data = typeof formData !== 'undefined' ? formData : {}
-        h1.text-center.text-info Nuevo paciente para internación
+        h1.text-center.text-info.mt-3 Nuevo paciente para internación
         p Busca el paciente por DNI para verificar si ya está registrado:
         .row
           .col-md-4
@@ -112,37 +112,37 @@ html(lang="en")
             input(type="hidden" id="campoAfiliado" name="numero_afiliado" value=data.numero_afiliado || '')
           .row
             .col-sm-6
-              button(type="submit" class="btn btn-primary w-100").mb-5= data.id ? 'Actualizar paciente' : 'Registrar paciente'
-        form#formEliminarPaciente(action="/pacientes/eliminar/" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este paciente?')" hidden).mt-2
+              button(type="submit" class="btn btn-primary w-100 mt-5").mb-5= data.id ? 'Actualizar paciente' : 'Registrar paciente'
+        form#formEliminarPaciente(action="/pacientes/eliminar/" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este paciente?')" style="display:none").p-0.mb-5
           button.btn.btn-danger(type="submit") Eliminar paciente
               
           
 
         .row.justify-content-center
           .col-md-3.mb-4
-            a(href="/recepcionista", class="text-decoration-none")
+            a(href="/recepcionista", class="text-decoration-none h-100")
               .card.h-100.shadow.text-center
                 i.fa-solid.fa-hospital-user.fa-4x.text-info.mt-4
                 .card-body
                   h5.card-title.text-info Volver a Recepción
                   p.card-text Regresar a la página de recepción.
           .col-md-3.mb-4
-            a(href="/Admision", class="text-decoration-none")
+            a(href="/Admision", class="text-decoration-none h-100")
               .card.h-100.shadow.text-center
                 i.fa-solid.fa-bed.fa-4x.text-info.mt-4
                 .card-body
                   h5.card-title.text-info Admisión de Paciente
-                  p.card-text Admisión de paciente para internación.
+                  p.card-text Registra la admisión de un paciente en el hospital, asignando una cama y habitación.
           .col-md-3.mb-4
-            a(href="/Modificar", class="text-decoration-none")
+            a(href="/Modificar", class="text-decoration-none h-100")
               .card.h-100.shadow.text-center
                 i.fa-solid.fa-user-pen.fa-4x.text-info.mt-4
                 .card-body
-                  h5.card-title.text-info Modificar o Actualizar
-                  p.card-text Modificar o actualizar datos del paciente
+                  h5.card-title.text-info Modificar o eliminar admisión
+                  p.card-text Busca la lista de internaciones de un paciente en el hospital y modifica o elimina su admisión.
           .col-md-3.mb-4
             // Botón para abrir el modal de gestión de turnos
-            a(href="#", class="text-decoration-none", data-bs-toggle="modal", data-bs-target="#turnoModal")
+            a(href="#", class="text-decoration-none h-100", data-bs-toggle="modal", data-bs-target="#turnoModal")
               .card.h-100.shadow.text-center
                 i.fa-solid.fa-calendar-check.fa-4x.text-info.mt-4
                 .card-body
