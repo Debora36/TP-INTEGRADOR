@@ -113,8 +113,18 @@ html(lang="en")
           .row
             .col-sm-6
               button(type="submit" class="btn btn-primary w-100 mt-5").mb-5= data.id ? 'Actualizar paciente' : 'Registrar paciente'
-        form#formEliminarPaciente(action="/pacientes/eliminar/" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este paciente?')" style="display:none").p-0.mb-5
-          button.btn.btn-danger(type="submit") Eliminar paciente
+        .row
+          .col-sm-6
+            form#formAsociarPaciente(action="/paciente/asociarPaciente" method="POST").p-0.mb-5
+              .row
+                .col-sm-6
+                  input(type="text", name="DNI" id="DNI" hidden).m-0.p-0
+                  input(type="text" name="dni_urgencia" id="dni_urgencia" required, value=data.dni_urgencia || '', placeholder="Ingrese un dni falso de urgencia")
+                .col-sm-6
+                  button(type="submit" class="btn btn-secondary w-100") Asociar DNI de urgencia
+          .col-sm-6
+            form#formEliminarPaciente(action="/pacientes/eliminar/" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este paciente?')" style="display:none").p-0.mb-5
+              button.btn.btn-danger(type="submit") Eliminar paciente
               
           
 
@@ -227,7 +237,12 @@ html(lang="en")
               document.querySelector('select[name="ID_Obra_social_tmp"]').value = paciente.ID_Obra_social || '';
               document.querySelector('select[name="plan_id_tmp"]').value = paciente.plan_id || '';
               document.querySelector('input[name="numero_afiliado_tmp"]').value = paciente.numero_afiliado || '';
-              //document.querySelector('input[name="obra_social"][value="' + (paciente.ID_Obra_social ? 'si' : 'no') + '"]').checked = true;
+              document.querySelector('select[name="Genero"]').value = paciente.Genero;
+              document.getElementById("campoObraSocial").value = paciente.ID_Obra_social || '';
+              document.getElementById("campoPlan").value = paciente.plan_id || '';
+              document.getElementById("campoAfiliado").value = paciente.numero_afiliado || '';
+              // Actualizar el campo oculto de DNI para el formulario de asociación
+              document.getElementById('DNI').value = paciente.DNI || '';
               // Disparar el evento change para cargar los planes
               const eventoCambio = new Event('change');
               document.querySelector('#ID_Obra_social_tmp').dispatchEvent(eventoCambio);
@@ -243,16 +258,17 @@ html(lang="en")
                 idInput.name = 'id';
                 document.querySelector('form').appendChild(idInput);
               }
+              document.getElementById("formAsociarPaciente").action ="/paciente/asociarPaciente";
               idInput.value = paciente.id;
               // Mostrar el botón de eliminar paciente
+              // Mostrar el form solo si el paciente está buscado (ya tiene ID)
               document.getElementById("formEliminarPaciente").action = `/paciente/eliminar/${paciente.id}`;
               document.getElementById("formEliminarPaciente").style.display = "block";
-
               // También actualizá el formulario de edición si no tiene el `action` correcto
               document.querySelector('form').action = `/paciente/editar/${paciente.id}`;
               document.querySelector('button[type="submit"]').textContent = 'Actualizar paciente';
             } catch (error) {
-              alert('Error al buscar paciente.');
+              alert('Error al buscarpaciente.');
             }
           }
           // Función para guardar la obra social seleccionada

@@ -27,7 +27,9 @@ html(lang="en")
                         label.form-label DNI del paciente:
                         input(type="text", name="dni", id="dni", value=DNI || '')
                     button.btn.btn-primary(type="submit") Buscar
-
+                if mensajeError
+                    .alert.alert-danger(id='mensajeError')
+                        | #{mensajeError}
                 if internaciones.length
                     table.table.mt-4
                         thead

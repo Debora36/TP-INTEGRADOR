@@ -5,17 +5,17 @@ exports.buscarInternaciones = async (req, res) => {
 
   try {
     const paciente = await Paciente.findOne({ where: { DNI: dni } });
-
+    
     if (!paciente) {
       return res.render('modificar', {
         internaciones: [],
         alas: [],
         habitaciones: [],
         camas: [],
-        DNI
+        dni,
+        mensajeError: 'El DNI no pertenece a un paciente registrado.'
       });
     }
-
     const internaciones = await Internacion.findAll({
         
       where: { ID_Paciente: paciente.id },

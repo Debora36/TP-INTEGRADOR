@@ -2,6 +2,7 @@ const Nacionalidad = require('../modelo/nacionalidad');
 const ObraSocial = require('../modelo/obra_social');
 const Plan = require('../modelo/plan_obra_social');
 const { Op } = require('sequelize');
+const { Internacion} = require('../modelo');
 console.log("Ruta GET /registro activa")
 
 exports.formularioPaciente = async (req, res) => {
@@ -136,7 +137,7 @@ exports.buscarPorDNI = async (req, res) => {
     const plain = paciente.get({ plain: true });
     plain.FechaNacimiento = plain.FechaNacimiento.toISOString().split('T')[0]; // YYYY-MM-DD
 
-    res.json(plain); // ✅ solo una vez
+    res.json(plain);
   } catch (error) {
     console.error('Error al buscar paciente:', error);
     res.status(500).json({ mensaje: 'Error en el servidor' });
@@ -168,3 +169,31 @@ exports.eliminarPaciente = async (req, res) => {
   }
 };
 
+exports.asociarPaciente = async (req, res) => {
+  try {
+    console.log("Body recibido en asociarPaciente:", req.body);
+    const dniNuevo = req.body.DNI; // DNI del paciente real (ya registrado)
+    const dniUrgencia = req.body.dni_urgencia; // DNI falso del paciente n/n
+
+    const pacienteReal = await Paciente.findOne({ where: { DNI: dniNuevo } });
+    const pacienteNN = await Paciente.findOne({ where: { DNI: dniUrgencia } });
+
+    if (!pacienteReal || !pacienteNN) {
+      return res.status(404).send('No se encontraron ambos pacientes');
+    }
+
+    // Actualizar internación
+    await Internacion.update(
+      { ID_Paciente: pacienteReal.id },
+      { where: { ID_Paciente: pacienteNN.id } }
+    );
+
+    // Eliminar paciente n/n
+    await pacienteNN.destroy();
+
+    res.redirect('/registro'); // o donde prefieras redirigir
+  } catch (error) {
+    console.error('Error asociando paciente:', error);
+    res.status(500).send('Error interno del servidor');
+  }
+};

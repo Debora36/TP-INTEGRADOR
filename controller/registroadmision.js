@@ -65,3 +65,26 @@ exports.editarDesdeModificar = async (req, res) => {
     res.status(500).send("Error al cargar datos para edición.");
   }
 };
+exports.crearPacienteUrgencia = async (req, res) => {
+  try {
+    // Generamos un DNI único temporal
+    const dniFalso = Math.floor(10000000 + Math.random() * 90000000);
+    const paciente = await Paciente.create({
+      Nombre: 'Paciente',
+      Apellido: 'Desconocido',
+      DNI: dniFalso,
+      Genero: 'H',
+      FechaNacimiento: new Date(2000, 0, 1),
+      Telefono: '+0000000000',
+      Email: '',
+      Contacto_emergencia: '+0000000000',
+      Direccion: 'Desconocida',
+      ID_Nacionalidad: 1  
+    });
+
+    res.json(paciente);
+  } catch (error) {
+    console.error('Error creando paciente de urgencia:', error);
+    res.status(500).json({ error: 'Error creando paciente de urgencia' });
+  }
+};

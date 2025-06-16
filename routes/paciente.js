@@ -9,4 +9,7 @@ router.post('/editar/:id', registroController.actualizarPaciente);
 
 // Ruta para eliminar paciente
 router.post('/eliminar/:id', registroController.eliminarPaciente);
+
+// Ruta para asociar paciente a una internación
+router.post('/asociarPaciente', registroController.asociarPaciente);
 module.exports = router;

@@ -28,9 +28,12 @@ html(lang="en")
           input(type="text" name="dni" id="dni" required)
         .col-md-4
           button(type="button" class="btn btn-primary w-100" onclick="buscarPaciente()").mt-4 Buscar paciente
+        .col-md-4
+          button.btn.btn-danger.w-100(type="button" onclick="pacienteDeUrgencia()").mt-4 Urgencia
       .row
         label Paciente encontrado:
         h2#nombrePaciente.text-primary
+        h3#dni_urg.text-danger
         input(type="hidden" name="Genero" id="Genero" required)
       form#form-asignacion(action="/habitaciones/asignar-habitacion" method="POST").p-0
         .row
@@ -161,6 +164,25 @@ html(lang="en")
           } catch (error) {
             alert('Error al buscar habitaciones.');
           } 
+        }
+        async function pacienteDeUrgencia() {
+          try {
+            const res = await fetch('/admision/urgencia', {
+              method: 'POST'
+            });
+
+            if (!res.ok) throw new Error('No se pudo crear el paciente de urgencia');
+
+            const paciente = await res.json();
+            document.getElementById('nombrePaciente').textContent = `${paciente.Nombre} ${paciente.Apellido}`;
+            document.getElementById('dni_urg').textContent = ` Guarde el DNI: ${paciente.DNI} del paciente desconocido para futuras referencias`;
+            document.querySelector('input[name="ID_Paciente"]').value = paciente.id;
+            document.querySelector('input[name="Genero"]').value = paciente.Genero;
+            document.getElementById('dniOculto').value = paciente.DNI;
+            document.getElementById('dni').value = paciente.DNI;
+          } catch (err) {
+            alert('Error: ' + err.message);
+          }
         }
       style.
         .cama-selector input[type="radio"]:checked + .fa-bed {
