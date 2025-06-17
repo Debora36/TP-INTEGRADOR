@@ -59,7 +59,7 @@ html(lang="en")
                       h5.modal-title#turnoModalLabel Gestión de Turnos
                       button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
                     .modal-body.m-0.p-0
-                      form#turnoForm
+                      form#turnoForm.pb-0
                         .mb-3
                           label.form-label(for="dni_paciente") DNI del paciente
                           input.form-control(type="text", id="dni_paciente", name="dni_paciente", placeholder="DNI del paciente")
@@ -67,10 +67,8 @@ html(lang="en")
                           label.form-label(for="medico") Médico
                           select.form-control(id="medico", name="medico")
                             option(value="" selected disabled) Seleccione un médico
-                            option(value="Dr. Juan Pérez") Dr. Juan Pérez
-                            option(value="Dra. Ana Gómez") Dra. Ana Gómez
-                            option(value="Dr. Carlos Ruiz") Dr. Carlos Ruiz
-                            option(value="Dra. Laura Fernández") Dra. Laura Fernández
+                            each medico in medicos
+                              option(value=medico.id)= medico.nombre
                         .mb-3
                           label.form-label(for="fecha") Fecha
                           input.form-control(type="date", id="fecha", name="fecha")
@@ -80,3 +78,70 @@ html(lang="en")
                         .d-flex.justify-content-between
                           button.btn.btn-primary.m-3(type="submit") Asignar Turno
                           button.btn.btn-info.m-3(type="button", id="verTurnoBtn") Ver Turno
+                      .d-flex.justify-content-center
+                        form#formEliminarTurno(method="POST" style="display:none" onsubmit="return confirm('Si atiende al paciente, se elimina el turno asignado')").p-0.mb-2.w-50
+                          button.btn.btn-success.mb-3(type="submit") Atender paciente
+    script.
+      document.addEventListener('DOMContentLoaded', () => {
+        const turnoForm = document.getElementById('turnoForm');
+        const verTurnoBtn = document.getElementById('verTurnoBtn');
+        const eliminarForm = document.getElementById('formEliminarTurno');
+
+        turnoForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const data = {
+            dni_paciente: document.getElementById('dni_paciente').value,
+            medico: document.getElementById('medico').value,
+            fecha: document.getElementById('fecha').value,
+            hora: document.getElementById('hora').value
+          };
+          if (!data.hora || !data.fecha || !data.dni_paciente || !data.medico) {
+            alert('Debe completar todos los campos.');
+            return;
+          }
+          // Validar que la fecha no sea pasada y que la hora sea futura si es hoy
+          const hoy = new Date();
+          const fechaInput = new Date(data.fecha + 'T' + data.hora);
+          if (fechaInput < hoy) {
+            alert('No se puede asignar un turno en el pasado.');
+            return;
+          }
+          try {
+            const res = await fetch('/turnos/crear', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+              alert('Turno asignado correctamente');
+              turnoForm.reset();
+              eliminarForm.style.display = "none";
+            } else {
+              alert('Error al asignar turno');
+            }
+          } catch (error) {
+            console.error('Error en el envío:', error);
+          }
+        });
+
+        verTurnoBtn.addEventListener('click', async () => {
+          const dni = document.getElementById('dni_paciente').value;
+          if (!dni) return alert('Ingrese un DNI primero');
+
+          try {
+            const res = await fetch(`/turnos/buscar/${dni}`);
+            const turno = await res.json();
+
+            document.getElementById('medico').value = turno.medico_id || '';
+            document.getElementById('fecha').value = turno.fecha || '';
+            document.getElementById('hora').value = turno.hora || '';
+
+            eliminarForm.action = `/turnos/eliminar/${turno.id}`;
+            eliminarForm.style.display = "block";
+          } catch (error) {
+            console.error('Error al consultar turnos:', error);
+            alert('No se encontró un turno para ese paciente.');
+          }
+        });
+      });

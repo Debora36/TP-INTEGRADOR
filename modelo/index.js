@@ -3,6 +3,8 @@ const Cama = require('./cama');
 const AlaHospital = require('./ala_hospital');
 const Internacion = require('./internacion');
 const Paciente = require('./paciente');
+const Medico = require('./medico');
+const Turno = require('./turno');
 
 // Habitacion ⇄ Cama
 Habitacion.hasMany(Cama, { foreignKey: 'ID_Habitacion', as: 'camas' });
@@ -24,6 +26,9 @@ Paciente.hasMany(Internacion, { foreignKey: 'ID_Paciente', as: 'internacion' });
 Internacion.belongsTo(Habitacion, { foreignKey: 'ID_Habitacion', as: 'habitacion' });
 Habitacion.hasMany(Internacion, { foreignKey: 'ID_Habitacion', as: 'internaciones' });
 
+Turno.associate && Turno.associate({ Paciente, Medico });
+Paciente.associate && Paciente.associate({ Turno });
+Medico.associate && Medico.associate({ Turno });
 
 // Exportar todos los modelos
 module.exports = {
@@ -31,5 +36,7 @@ module.exports = {
   Cama,
   AlaHospital,
   Internacion,
-  Paciente
+  Paciente,
+  Medico,
+  Turno
 };

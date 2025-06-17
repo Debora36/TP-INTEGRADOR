@@ -1,0 +1,13 @@
+const { Medico } = require('../modelo');
+
+const renderRecepcion = async (req, res) => {
+  try {
+    const medicos = await Medico.findAll({ order: [['nombre', 'ASC']] });
+    res.render('recepcion', { medicos }); // ← ¡asegúrate de pasarlo!
+  } catch (error) {
+    console.error('Error al cargar médicos:', error);
+    res.status(500).send('Error al cargar la vista de recepción');
+  }
+};
+
+module.exports = { renderRecepcion };

@@ -150,44 +150,7 @@ html(lang="en")
                 .card-body
                   h5.card-title.text-info Modificar o eliminar admisión
                   p.card-text Busca la lista de internaciones de un paciente en el hospital y modifica o elimina su admisión.
-          .col-md-3.mb-4
-            // Botón para abrir el modal de gestión de turnos
-            a(href="#", class="text-decoration-none h-100", data-bs-toggle="modal", data-bs-target="#turnoModal")
-              .card.h-100.shadow.text-center
-                i.fa-solid.fa-calendar-check.fa-4x.text-info.mt-4
-                .card-body
-                  h5.card-title.text-info Gestión de turno
-                  p.card-text Verifica los turnos de los pacientes ó asigna uno nuevo
 
-            // Modal de gestión de turnos
-            .modal.fade#turnoModal(tabindex="-1", aria-labelledby="turnoModalLabel", aria-hidden="true")
-              .modal-dialog
-                .modal-content
-                  .modal-header
-                    h5.modal-title#turnoModalLabel Gestión de Turnos
-                    button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
-                  .modal-body.m-0.p-0
-                    form#turnoForm
-                      .mb-3
-                        label.form-label(for="dni_paciente") DNI del paciente
-                        input.form-control(type="text", id="dni_paciente", name="dni", placeholder="DNI del paciente")
-                      .mb-3
-                        label.form-label(for="medico") Médico
-                        select.form-control(id="medico", name="medico")
-                          option(value="" selected disabled) Seleccione un médico
-                          option(value="Dr. Juan Pérez") Dr. Juan Pérez
-                          option(value="Dra. Ana Gómez") Dra. Ana Gómez
-                          option(value="Dr. Carlos Ruiz") Dr. Carlos Ruiz
-                          option(value="Dra. Laura Fernández") Dra. Laura Fernández
-                      .mb-3
-                        label.form-label(for="fecha") Fecha
-                        input.form-control(type="date", id="fecha", name="fecha")
-                      .mb-3
-                        label.form-label(for="hora") Hora
-                        input.form-control(type="time", id="hora", name="hora")
-                      .d-flex.justify-content-between
-                        button.btn.btn-primary.m-3(type="submit") Asignar Turno
-                        button.btn.btn-info.m-3(type="button", id="verTurnoBtn") Ver Turno
         script.
           // Script para cargar los planes de la obra social seleccionada
           document.addEventListener('DOMContentLoaded', () => {

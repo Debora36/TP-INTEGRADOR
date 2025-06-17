@@ -58,11 +58,18 @@ app.use('/logout', logoutRouter);
 app.use('/habitaciones', habitacionesRoutes);
 app.use(rutasAPI);
 app.use('/Modificar', require('./routes/modificar'));
+app.use('/turnos', require('./routes/turnos'));
 // Vistas protegidas
-app.get('/recepcionista', verificarSesion, (req, res) => {
-  res.render('recepcion', { usuario: req.session.usuario });
+const Medico = require('./modelo/medico');
+app.get('/recepcionista', verificarSesion, async (req, res) => {
+   try {
+    const medicos = await Medico.findAll({ order: [['nombre', 'ASC']] });
+    res.render('recepcion', { usuario: req.session.usuario, medicos });
+  } catch (error) {
+    console.error('Error al cargar médicos:', error);
+    res.status(500).send('Error al cargar la vista de recepción');
+  }
 });
-
 app.get('/modificar', verificarSesion, (req, res) => {
   res.render('modificar', { usuario: req.session.usuario });
 });

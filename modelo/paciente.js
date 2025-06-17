@@ -64,4 +64,9 @@ const sequelize = require('../db');
     tableName: 'paciente',
     timestamps: false
   });
+
+  Paciente.associate = models => {
+  Paciente.hasMany(models.Turno, { foreignKey: 'id_paciente' });
+ };
+
   module.exports = Paciente;

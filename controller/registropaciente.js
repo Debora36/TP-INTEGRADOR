@@ -146,12 +146,20 @@ exports.buscarPorDNI = async (req, res) => {
 
 exports.actualizarPaciente = async (req, res) => {
   const { id } = req.params;
+    // Convierte '' en null para campos opcionales
+  const obraSocial = req.body.ID_Obra_social || null;
+  const plan = req.body.plan_id || null;
+  const numeroAfiliado = req.body.numero_afiliado || null;
   try {
     const paciente = await Paciente.findByPk(id);
     if (!paciente) return res.status(404).send('Paciente no encontrado');
-    console.log(req.body);
-    await paciente.update(req.body);
-    res.redirect('/registro'); // o donde vos prefieras
+    await paciente.update({
+      ...req.body,
+      ID_Obra_social: obraSocial,
+      plan_id: plan,
+      numero_afiliado: numeroAfiliado
+    });
+    res.redirect('/registro');
   } catch (error) {
     console.error(error);
     res.status(500).send('Error al actualizar paciente');
@@ -171,7 +179,6 @@ exports.eliminarPaciente = async (req, res) => {
 
 exports.asociarPaciente = async (req, res) => {
   try {
-    console.log("Body recibido en asociarPaciente:", req.body);
     const dniNuevo = req.body.DNI; // DNI del paciente real (ya registrado)
     const dniUrgencia = req.body.dni_urgencia; // DNI falso del paciente n/n
 

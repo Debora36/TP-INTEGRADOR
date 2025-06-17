@@ -68,11 +68,13 @@ exports.editarInternacion = async (req, res) => {
   try {
     const internacion = await Internacion.findOne({ where: { ID: id } });
     if (!internacion) return res.status(404).send('Internación no encontrada');
-
+    await Cama.update(
+      { disponible: true },
+      { where: { ID: internacion.ID_Cama } }
+    );
     internacion.ID_Cama = ID_Cama;
     internacion.ID_Habitacion = ID_Habitacion;
     internacion.FechaIngreso = FechaIngreso;
-
     await internacion.save();
     res.sendStatus(200);
   } catch (error) {
