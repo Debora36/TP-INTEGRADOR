@@ -8,6 +8,7 @@ Un sistema integral para optimizar la administración de pacientes, internacione
 - [Uso local](#uso-local)
 - [Uso en linea](#uso-en-línea)
 - [Tecnologías Usadas](#-tecnologías-usadas)
+- [Documentación de endpoints](#endpoints)
 - [Problemas encontrados y solucionados](#problemas-y-soluciones)
 
 ## Características
@@ -97,6 +98,67 @@ Este proyecto ha sido construido utilizando las siguientes tecnologías:
 * **Base de Datos:**
     * [MySQL]
     * [sequelize]
+
+## Endpoints
+
+* Autenticación:
+
+| Método | Ruta      | Descripción                       |
+| ------ | --------- | --------------------------------- |
+| POST   | `/login`  | Inicia sesión como usuario        |
+| GET    | `/logout` | Cierra sesión y redirige al login |
+
+* Rol recepcionista
+
+| Método | Ruta              | Descripción                       |
+| ------ | ----------------- | --------------------------------- |
+| GET    | `/recepcionista`  | Muestra el panel con las opciones |
+
+
+* Pacientes:
+
+| Método | Ruta                       | Descripción                                 |
+| ------ | -------------------------- | ------------------------------------------- |
+| GET    | `/modelo/paciente/:dni`    | Busca un paciente por DNI                   |
+| POST   | `/paciente/actualizar/:id` | Actualiza los datos del paciente            |
+| POST   | `/paciente/eliminar/:id`   | Elimina al paciente por ID                  |
+| POST   | `/paciente/asociarPaciente`| Asocia un paciente real con uno de urgencia |
+
+* Habitaciones e internaciones
+
+| Método | Ruta                               | Descripción                                                  |
+| ------ | ---------------------------------- | ------------------------------------------------------------ |
+| GET    | `/habitaciones/buscar`             | Filtra habitaciones disponibles con por ala, tipo y género   |
+| POST   | `/habitaciones/asignar-habitacion` | Asigna cama al paciente o edita internación existente        |
+
+* Admisiones
+
+| Método | Ruta                     | Descripción                                |
+| ------ | ------------------------ | ------------------------------------------ |
+| GET    | `/admision`              | Muestra el formulario de admisión          |
+| POST   | `/admision`              | Registra una nueva internación             |
+| GET    | `/admision/editar`       | Muestra la internacion del paciente        |
+| POST   | `/admision/urgencia`     | Registra un paciente de urgencia (NN)      |
+
+* Modificar o eliminar admisiones
+
+| Método | Ruta               | Descripción                                      |
+| ------ | ------------------ | -------------------------------------------------|
+| GET    | `/modificar`       | Muestra form para buscar internaciones por dni   |
+| GET    | `/modificar/buscar`| Lista las admisiones de un paciente              |
+| POST   | `/modificar/internacion/:id/eliminar`| Elimina una internacion por id |
+
+
+* Turnos
+
+| Método | Ruta                  | Descripción                  |
+| ------ | --------------------- | -----------------------------|
+| GET    | `/turnos/buscar/:dni` | Muestra turno más reciente   |
+| POST   | `/turnos/crear`       | Crea un nuevo turno          |
+| POST   | `/turnos/eliminar/:id`| Elimina un turno por ID      |
+
+
+⚠️ Nota: Muchos de estos endpoints están diseñados para ser consumidos por formularios o funciones AJAX dentro de la aplicación. No son accesibles directamente desde el navegador sin pasar por el flujo correcto ni sin una sesión activa.
 
 ## Problemas y soluciones
 

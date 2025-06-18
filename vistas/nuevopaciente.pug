@@ -29,12 +29,12 @@ html(lang="en")
             input(type="text" name="dni" id="dni" required)
           .col-md-4
             button(type="button" class="btn btn-primary w-100" onclick="buscarPaciente()").mt-4 Buscar paciente
-        p Complete el siguiente formulario para registrarlo:
         if exito
           .alert.alert-success(role='alert')= exito
         if errores
           each error in errores
             .alert.alert-danger(role='alert')= error
+        h4.text-info.mt-3.mb-3 Complete el siguiente formulario para registrarlo:
         form(action=data.id ? `/pacientes/editar/${data.id}` : "/registro/nuevopaciente", method="POST").p-0
           .row
             .col-sm-6
@@ -56,7 +56,7 @@ html(lang="en")
           .row
             .col-sm-6
               label(for="Telefono") Teléfono:
-              input(type="text", name="Telefono", required, pattern="^\+\d{1,3}\d{9}$", title="Ingrese un número valido con codigo de área y sin guiones ni espacios", value=data.Telefono || '')
+              input(type="text", name="Telefono", required, pattern="^\+\d{1,3}\d{9}$", title="Ingrese un número valido con codigo de área y sin guiones ni espacios", value=data.Telefono || '' placeholder="+5491123456789")
             .col-sm-6
               label(for="FechaNacimiento") Fecha de nacimiento:
               input(type="date", name="FechaNacimiento", required, value=data.FechaNacimiento || '')
@@ -75,7 +75,7 @@ html(lang="en")
           .row
             .col-sm-6
               label(for="Contacto_emergencia") Contacto de emergencia:
-              input(type="text", name="Contacto_emergencia", required, pattern="^\+\d{1,3}\d{9}$", title="Ingrese un número valido con codigo de área y sin guiones ni espacios", value=data.Contacto_emergencia || '')
+              input(type="text", name="Contacto_emergencia", required, pattern="^\+\d{1,3}\d{9}$", title="Ingrese un número valido con codigo de área y sin guiones ni espacios", value=data.Contacto_emergencia || '' placeholder="+5491123456789")
             .col-sm-6
               label Obra social:
               button.btn.btn-outline-info.p-2(type="button" data-bs-toggle="modal" data-bs-target="#modalObraSocial") Cargar obra social
@@ -119,9 +119,9 @@ html(lang="en")
               .row
                 .col-sm-6
                   input(type="text", name="DNI" id="DNI" hidden).m-0.p-0
-                  input(type="text" name="dni_urgencia" id="dni_urgencia" required, value=data.dni_urgencia || '', placeholder="Ingrese un dni falso de urgencia")
+                  input(type="text" name="dni_urgencia" id="dni_urgencia" required, value=data.dni_urgencia || '', placeholder="Ingrese un dni falso de urgencia" style="display:none")
                 .col-sm-6
-                  button(type="submit" class="btn btn-secondary w-100") Asociar DNI de urgencia
+                  button(type="submit" id="btn_urgencia" class="btn btn-secondary w-100" style="display:none") Asociar DNI de urgencia
           .col-sm-6
             form#formEliminarPaciente(action="/pacientes/eliminar/" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este paciente?')" style="display:none").p-0.mb-5
               button.btn.btn-danger(type="submit") Eliminar paciente
@@ -223,7 +223,9 @@ html(lang="en")
               }
               document.getElementById("formAsociarPaciente").action ="/paciente/asociarPaciente";
               idInput.value = paciente.id;
-              // Mostrar el botón de eliminar paciente
+              // Mostrar el botón de asignar a otro paciente
+              document.getElementById("btn_urgencia").style.display = "block";
+              document.getElementById("dni_urgencia").style.display = "block";
               // Mostrar el form solo si el paciente está buscado (ya tiene ID)
               document.getElementById("formEliminarPaciente").action = `/paciente/eliminar/${paciente.id}`;
               document.getElementById("formEliminarPaciente").style.display = "block";

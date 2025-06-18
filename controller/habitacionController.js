@@ -45,9 +45,6 @@ exports.buscarHabitaciones = async (req, res) => {
 
       const libres = camas.filter(c => !c.internacion).length;
       const ocupadas = camas.filter(c => c.internacion);
-      console.log("Habitación:", habitacion.Numero);
-console.log("Libres:", libres);
-console.log("Ocupadas:", ocupadas.map(o => o.internacion?.paciente?.genero));
       const tipoNum = parseInt(tipo_habitacion);
       if (tipoNum === 1 && habitacion.camas_disponibles === 1) {
         // Habitaciones simples: al menos una cama libre
@@ -94,7 +91,6 @@ console.log("Ocupadas:", ocupadas.map(o => o.internacion?.paciente?.genero));
 };
 
 exports.asignarHabitacion = async (req, res) => {
-  console.log('Datos del body:', req.body);
   const { ID_Paciente, ID_Cama, modoEdicion, ID_internacion} = req.body;
   try {
     const cama = await Cama.findByPk(ID_Cama);
@@ -108,11 +104,11 @@ exports.asignarHabitacion = async (req, res) => {
       FechaIngreso: new Date()
     });
     if (modoEdicion === 'true' && ID_internacion) {
-      // ✅ Modo edición: actualizar internación existente
+      // Modo edición: actualizar internación existente
       const internacion = await Internacion.findByPk(ID_internacion);
       if (!internacion) return res.status(404).json({ error: 'Internación no encontrada' });
 
-      // Marcar la cama anterior como disponible
+      // Marcar la cama anterior como disponible en la base de datos
       const camaAnterior = await Cama.findByPk(internacion.ID_Cama);
       if (camaAnterior) {
         camaAnterior.disponible = true;

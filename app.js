@@ -2,11 +2,9 @@ const express = require('express');
 const pug = require('pug');
 const path = require('path');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const mysql = require('mysql2');
 const sequelize = require('./db');
-
-// ... tus require y configuración inicial
 
 app.set('views', path.join(__dirname, 'vistas'));
 app.set('view engine', 'pug');
@@ -15,7 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Middleware de debug (opcional)
+// Middleware de debug
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
@@ -49,17 +47,17 @@ const pacienteRoutes = require('./routes/paciente');
 const habitacionesRoutes = require('./routes/habitaciones');
 
 // Usar rutas
-app.use('/modelo/paciente', pacienteRoutes);
-app.use('/paciente', pacienteRoutes);
+app.use('/modelo/paciente', pacienteRoutes);//lo uso para buscar paciente por dni
+app.use('/paciente', pacienteRoutes);//lo uso para editar eliminar y asociar paciente
 app.use('/registro', registroPacienteRoutes);
 app.use('/admision', registroAdmisionRoutes);
 app.use('/login', loginRouter);
 app.use('/logout', logoutRouter);
 app.use('/habitaciones', habitacionesRoutes);
-app.use(rutasAPI);
-app.use('/Modificar', require('./routes/modificar'));
+app.use(rutasAPI);//para cargar los planes de obra social
+app.use('/Modificar', require('./routes/modificar'));//para buscar/editar/eliminar internaciones
 app.use('/turnos', require('./routes/turnos'));
-// Vistas protegidas
+// Vistas protegidas: solo para usuarios autenticados
 const Medico = require('./modelo/medico');
 app.get('/recepcionista', verificarSesion, async (req, res) => {
    try {
@@ -74,15 +72,9 @@ app.get('/modificar', verificarSesion, (req, res) => {
   res.render('modificar', { usuario: req.session.usuario });
 });
 
-// Página principal
+// Página principal: inicio de sesión
 app.get('/', (req, res) => {
   res.render('index');
-});
-
-// Solo si necesitás recibir post de registro por otra razón:
-app.post('/registro', (req, res) => {
-  const { user, password, typeofuser } = req.body;
-  console.log(user, password, typeofuser);
 });
 
 // Modelos

@@ -63,12 +63,7 @@ router.post('/asignar-habitacion', async (req, res) => {
       return res.status(400).send('La cama seleccionada no está disponible.');
     }
 
-    // Crear registro de internación (simplificado)
-    await Internacion.create({
-      ID_Paciente: paciente.ID,
-      ID_Cama: camaSeleccionada.ID,
-      fecha_ingreso: new Date()
-    });
+  
 
     // Marcar cama como ocupada
     await camaSeleccionada.update({ disponible: false });
