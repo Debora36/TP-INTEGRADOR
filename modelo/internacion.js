@@ -31,6 +31,7 @@ const Internacion = sequelize.define('internacion', {
       key: 'ID'
     }
   },
+  motivo_internacion: { type: DataTypes.TEXT },
   FechaIngreso: {
     type: DataTypes.DATE,
     allowNull: false,
