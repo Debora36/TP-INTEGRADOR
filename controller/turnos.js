@@ -5,7 +5,8 @@ exports.formularioTurnos = async (req, res) => {
   const medicos = await Medico.findAll();
   console.log('Médicos cargados:');
   res.render('recepcion', {
-    medico: medicos,
+    //medico: medicos,
+    medicos: medicos,
     data: {}
   });
 
@@ -46,8 +47,7 @@ exports.verTurnosPorDNI = async (req, res) => {
     if (!paciente) return res.status(404).send('Paciente no encontrado');
 
     const proximoTurno = await Turno.findOne({
-      where: { id_paciente: paciente.id },
-      include: [{ model: Medico }],
+      where: { id_paciente: paciente.id, estado: 'Pendiente'},
       order: [['fecha', 'ASC'], ['hora', 'ASC']]
     });
 
@@ -60,14 +60,16 @@ exports.verTurnosPorDNI = async (req, res) => {
   }
 };
 
-
-exports.eliminarTurno = async (req, res) => {
+exports.marcarComoPresente = async (req, res) => {
   try {
     const { id } = req.params;
-    await Turno.destroy({ where: { id: id } });
+    await Turno.update(
+      { estado: 'Presente' },
+      { where: { id: id } }
+    );
     res.redirect('/recepcionista');
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error al eliminar turno');
+    res.status(500).send('Error al actualizar turno');
   }
 };

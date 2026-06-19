@@ -3,7 +3,6 @@ const ObraSocial = require('../modelo/obra_social');
 const Plan = require('../modelo/plan_obra_social');
 const { Op } = require('sequelize');
 const { Internacion} = require('../modelo');
-console.log("Ruta GET /registro activa")
 
 exports.formularioPaciente = async (req, res) => {
   try {

@@ -88,6 +88,10 @@ html(lang="en")
           document.getElementById('form-asignacion').addEventListener('submit', async function (e) {
             e.preventDefault();
 
+            const idPacienteInput = document.getElementById('ID_Paciente').value;
+            if (!idPacienteInput) {
+              return alert('Error: No se ha seleccionado un paciente válido. Por favor, búscalo primero por DNI.');
+            }
             const form = e.target;
             const datos = new FormData(form);
             const valores = Object.fromEntries(datos.entries());

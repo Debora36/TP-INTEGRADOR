@@ -5,6 +5,6 @@ const{formularioTurnos}= require('../controller/turnos');
 router.get('/formulario', formularioTurnos);
 router.post('/crear', turnoController.crearTurno);
 router.get('/buscar/:dni', turnoController.verTurnosPorDNI);
-router.post('/eliminar/:id', turnoController.eliminarTurno);
+router.post('/presente/:id', turnoController.marcarComoPresente);
 
 module.exports = router;

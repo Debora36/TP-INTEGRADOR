@@ -57,6 +57,11 @@ app.use('/habitaciones', habitacionesRoutes);
 app.use(rutasAPI);//para cargar los planes de obra social
 app.use('/Modificar', require('./routes/modificar'));//para buscar/editar/eliminar internaciones
 app.use('/turnos', require('./routes/turnos'));
+app.use('/medicos', require('./routes/medicos'));
+app.get('/enfermeria', (req, res) => {
+  res.redirect('/enfermeria/buscar');
+});
+app.use('/enfermeria', require('./routes/enfermeria'));
 // Vistas protegidas: solo para usuarios autenticados
 const Medico = require('./modelo/medico');
 app.get('/recepcionista', verificarSesion, async (req, res) => {
@@ -78,18 +83,17 @@ app.get('/', (req, res) => {
 });
 
 // Modelos
-require('./modelo/paciente');
-require('./modelo/obra_social');
-require('./modelo/nacionalidad');
-require('./modelo/plan_obra_social');
-require('./modelo/ala_hospital');
-require('./modelo/usuario');
+require('./modelo');
 
-sequelize.authenticate()
-  .then(() => console.log('Conexión a la base de datos exitosa.'))
-  .catch(err => console.error('Error de conexión:', err));
-
-// Escuchar servidor
-app.listen(port, () => {
-  console.log(`Servidor corriendo en http://localhost:${port}`);
-});
+sequelize.sync({ force: false })
+  .then(() => {
+    console.log('Base de datos conectada y tablas sincronizadas.');
+    
+    // Cuando las tablas están listas, enciende el servidor
+    app.listen(port, () => {
+      console.log(`Servidor corriendo en http://localhost:${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Error al sincronizar la base de datos:', error);
+  });

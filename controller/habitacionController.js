@@ -1,5 +1,4 @@
 const { Habitacion, Cama, AlaHospital, Internacion, Paciente } = require('../modelo'); 
-const { Op } = require('sequelize');
 
 exports.buscarHabitaciones = async (req, res) => {
   const { ala, tipo_habitacion, genero } = req.query;

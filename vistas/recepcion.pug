@@ -79,7 +79,7 @@ html(lang="en")
                           button.btn.btn-primary.m-3(type="submit") Asignar Turno
                           button.btn.btn-info.m-3(type="button", id="verTurnoBtn") Ver Turno
                       .d-flex.justify-content-center
-                        form#formEliminarTurno(method="POST" style="display:none" onsubmit="return confirm('Si atiende al paciente, se elimina el turno asignado')").p-0.mb-2.w-50
+                        form#formEliminarTurno(method="POST" style="display:none" onsubmit="return confirm('¿Confirmar que el paciente llegó y está en la sala de espera?')").p-0.mb-2.w-50
                           button.btn.btn-success.mb-3(type="submit") Atender paciente
     script.
       document.addEventListener('DOMContentLoaded', () => {
@@ -131,17 +131,22 @@ html(lang="en")
 
           try {
             const res = await fetch(`/turnos/buscar/${dni}`);
+            if (!res.ok) throw new Error('Turno no encontrado');
             const turno = await res.json();
 
             document.getElementById('medico').value = turno.medico_id || '';
             document.getElementById('fecha').value = turno.fecha || '';
             document.getElementById('hora').value = turno.hora || '';
 
-            eliminarForm.action = `/turnos/eliminar/${turno.id}`;
+            eliminarForm.action = `/turnos/presente/${turno.id}`;
             eliminarForm.style.display = "block";
           } catch (error) {
             console.error('Error al consultar turnos:', error);
-            alert('No se encontró un turno para ese paciente.');
+            alert('No se encontró un turno pendiente para ese paciente.');
+              document.getElementById('medico').value = '';
+              document.getElementById('fecha').value = '';
+              document.getElementById('hora').value = '';
+              eliminarForm.style.display = "none";
           }
         });
       });
