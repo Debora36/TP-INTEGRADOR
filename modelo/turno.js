@@ -23,7 +23,11 @@ const Turno = sequelize.define('Turno', {
     }
   },
   fecha: DataTypes.DATEONLY,
-  hora: DataTypes.TIME
+  hora: DataTypes.TIME,
+  estado: {
+    type: DataTypes.STRING(20),
+    defaultValue: 'Pendiente'
+  }
 }, {
   tableName: 'turno',
   timestamps: false 
