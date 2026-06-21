@@ -1,0 +1,210 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Recepción Enfermería
+    link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css", rel="stylesheet")
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css")
+    script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
+  
+  body.bg-light
+    //- NAVBAR
+    .navbar.navbar-expand-sm.bg-info.navbar-dark.p-3.mb-4
+       .container-fluid
+           .navbar-brand
+               h4.display-6.px-4.text-white Sistema Hospitalario
+           .d-flex.ms-auto.align-items-center
+               if usuario
+                   span.text-white.me-2= usuario.nombre_usuario
+               a(href="/logout", title="Cerrar sesión")
+                   i.fas.fa-sign-out-alt.text-white
+       
+    .container
+      //- MENSAJES
+      if mensaje
+        .alert.alert-success(role='alert')= mensaje
+      if errores
+        .alert.alert-danger(role='alert')= errores  
+                  
+    block contenido
+        .container.mt-4
+            //- TARJETA DEL PACIENTE
+            .card.border-0.shadow-sm.mb-4
+                .card-body.bg-white
+                    .row.align-items-center
+                        .col-md-4.text-center
+                            h3.text-primary #{paciente.Nombre} #{paciente.Apellido}
+                            text-muted DNI: 
+                            strong #{paciente.DNI}
+
+                        //Datos
+                        .col-md-8
+                            .row.text-center.mt-2
+                                .col-md-3
+                                    p.mb-1.text-muted Fecha Nac.
+
+                                    strong= paciente.FechaNacimiento ? new Date(paciente.FechaNacimiento).toLocaleDateString('es-AR') : 'N/A'
+                                .col-md-3
+                                    p.mb-1.text-muted Obra Social
+                                    strong #{paciente.obra_social ? paciente.obra_social.nombre : 'N/A'}
+                                .col-md-3
+                                    p.mb-1.text-muted Plan
+                                    strong #{paciente.plan_detalle ? paciente.plan_detalle.nombre_plan : 'N/A'}
+                                .col-md-3
+                                    p.mb-1.text-muted N° Afiliado
+                                    strong #{paciente.numero_afiliado || 'N/A'}
+
+            .row
+                .col-lg-6
+                    //Evaluación inicial
+                    .card.shadow-sm.mb-4
+                        .card-header.bg-info.text-white
+                            h5.mb-0 <i class="fas fa-clipboard-list"></i> Evaluación Inicial
+                        .card-body
+                            if evaluacion
+                                p.mb-1 <strong>Motivo de Ingreso:</strong> #{evaluacion.Motivo_Principal}
+                                p.mb-1 <strong>Sintomas:</strong> #{evaluacion.Sintomas_Desc}
+                                p.mb-1 <strong>Prioridad:</strong> #{evaluacion.Prioridad}
+                                p.mb-0 <strong>Plan de Cuidados:</strong> #{evaluacion.Plan_Cuidados_Preliminar}
+                            else
+                                p.text-muted.small No hay evaluación inicial registrada.
+
+                    //tratamientos indicados
+                    .card.shadow-sm.mb-4
+                        .card-header.bg-primary.text-white
+                            h5.mb-0 <i class="fas fa-user-md"></i> Tratamientos Indicados
+                        .card-body
+                            if tratamientos && tratamientos.length > 0
+                                each trat in tratamientos
+                                    .border.rounded.p-3.mb-3.bg-light
+                                        p.mb-1 <strong>Médico:</strong> #{trat.medico ? trat.medico.nombre : 'No especificado'}
+                                        p.mb-2 <strong>Descripción:</strong> #{trat.Descripcion}
+                                        
+                                        if trat.medicaciones && trat.medicaciones.length > 0
+                                            table.table.table-sm.mb-0
+                                                thead.table-secondary
+                                                    tr
+                                                        th Medicamento
+                                                        th Dosis
+                                                        th Frecuencia
+                                                tbody
+                                                    each med in trat.medicaciones
+                                                        tr
+                                                            td #{med.medicamento ? med.medicamento.nombre + ' (' + med.medicamento.presentacion + ')' : '-'}
+                                                            td= med.Dosis
+                                                            td= med.Frecuencia
+                                        else
+                                            p.text-muted.small.mb-0 Sin medicación cargada.
+                            else
+                                p.text-muted.small No hay tratamientos activos.
+=
+                //formulario de administracion de medicacion
+                .col-lg-6
+                    .card.shadow-sm.mb-4
+                        .card-header.bg-success.text-white
+                            h5.mb-0 <i class="fas fa-syringe"></i> Registrar Administración
+                        .card-body
+                            form#formAdministrar(action="/enfermeria/guardarAdministracion" method="POST")
+                                input(type="hidden" name="internacion_id" value=internacion.ID)
+
+
+                                .mb-3
+                                    label.form-label <strong>Motivo / Tipo</strong>
+                                    .d-flex.gap-3.mt-1
+                                        .form-check
+                                            input.form-check-input(type="radio" name="tipo_administracion" id="tipo1" value="Prescripto" required)
+                                            label.form-check-label(for="tipo1") Prescripto
+                                        .form-check
+                                            input.form-check-input(type="radio" name="tipo_administracion" id="tipo2" value="Habitual")
+                                            label.form-check-label(for="tipo2") Habitual
+                                        .form-check
+                                            input.form-check-input(type="radio" name="tipo_administracion" id="tipo3" value="Alivio del Dolor")
+                                            label.form-check-label(for="tipo3") Alivio del Dolor
+
+                                .mb-3
+                                    label.form-label Medicamento Administrado
+                                        select.form-select(name="ID_Medicacion" required)
+                                            option(value="" disabled selected) Seleccione un medicamento...
+                                            if catalogoMedicamentos
+                                                each med in catalogoMedicamentos
+                                                    option(value=med.id) #{med.nombre} - #{med.presentacion}
+
+                                .mb-3
+                                    label.form-label Dosis Aplicada
+                                    input.form-control(type="text" name="dosis_aplicada" placeholder="Ej: 1 ampolla, 500mg" required)
+
+                                .mb-3
+                                    label.form-label Notas / Observaciones
+                                    textarea.form-control(name="notas" rows="3" placeholder="Respuesta del paciente, justificación de analgesia..." required)
+
+                                button.btn.btn-success.w-100.mt-3(type="submit") 
+                                    i.fas.fa-save.me-2 
+                                    | Guardar Registro
+
+            //HISTORIAL
+            .row.justify-content-center.mb-5
+                .col-md-12
+                    .card.shadow-sm
+                        .card-header.bg-white
+                            h5.text-info <i class="fas fa-history"></i> Historial de Evolución - Medicación
+                        .card-body
+                            .table-responsive
+                                table.table.table-sm.table-hover.mt-2
+                                    thead.table-light
+                                        tr
+                                            th Fecha y Hora
+                                            th Enfermero/a
+                                            th Motivo
+                                            th Medicación
+                                            th Dosis
+                                            th Notas
+                                            th Acción
+                                    tbody
+                                        if historial && historial.length > 0
+                                            each registro, index in historial
+                                                tr(id=`fila-reg-${index}`)
+                                                    td
+                                                        strong= new Date(registro.fecha_hora).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+                                                    td #{registro.enfermero ? registro.enfermero.nombre + ' (' + registro.enfermero.matricula + ')' : '-'}
+                                                    td 
+                                                        span.badge.bg-secondary= registro.tipo_administracion
+                                                    td #{registro.medicamento_libre ? registro.medicamento_libre.nombre : 'No especificado'}
+                                                    td= registro.dosis_aplicada
+                                                    td.small.text-muted= registro.notas
+                                                    td
+                                                        form(action=`/enfermeria/administrar/eliminar/${registro.id}` method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este registro de administración de medicación?')")
+                                                            //- Pasamos el id de internación para saber a dónde redirigir después
+                                                            input(type="hidden" name="internacion_id" value=internacion.ID)
+                                                            button.btn.btn-danger.btn-sm(type="submit") 
+                                                                i.fas.fa-trash
+                                        else
+                                            tr
+                                                td.text-center.text-muted.py-4(colspan="6") 
+                                                    i.fas.fa-info-circle.me-2
+                                                    | No hay registros de medicación para esta internación.
+
+            .row.justify-content-center
+                    .col-md-4.mb-4
+                        a(href=`/enfermeria/historia/${internacion.ID}`, class="text-decoration-none h-100")
+                            .card.h-100.shadow.text-center.border-0.hover-shadow
+                                i.fa-solid.fa-file-alt.fa-4x.text-info.mt-4
+                                .card-body
+                                    h5.card-title.text-info Historia Clínica
+                                    p.card-text.small Ver antecedentes y datos pasados.
+
+                    .col-md-4.mb-4
+                        a(href=`/enfermeria/evaluacion/${internacion.ID}`, class="text-decoration-none h-100")
+                            .card.h-100.shadow.text-center.border-0
+                                i.fa-solid.fa-clipboard-list.fa-4x.text-warning.mt-4
+                                .card-body
+                                    h5.card-title.text-warning Evaluación Inicial
+                                    p.card-text.small Cargar alergias, motivo de ingreso y triage.
+
+                    .col-md-4.mb-4
+                        a(href=`/enfermeria/signos/${internacion.ID}`, class="text-decoration-none h-100")
+                            .card.h-100.shadow.text-center.border-0
+                                i.fa-solid.fa-heart-pulse.fa-4x.text-danger.mt-4
+                                .card-body
+                                    h5.card-title.text-danger Signos Vitales
+                                    p.card-text.small Cargar presión, temperatura y pulso.
