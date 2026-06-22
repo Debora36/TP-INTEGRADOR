@@ -19,6 +19,10 @@ const Medico = sequelize.define('Medico', {
     type: DataTypes.STRING(100),
     allowNull: false,
     unique: true
+  },
+  ID_Usuario:{
+    type: DataTypes.INTEGER,
+    allowNull: false
   }
 }, {
   tableName: 'medico',

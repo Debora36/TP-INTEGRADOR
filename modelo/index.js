@@ -27,6 +27,7 @@ const AdministracionMedicacion = require('./administracion_medicacion');
 const Obra_Social = require('./obra_social');
 const Plan = require('./plan_obra_social');
 const PacienteCirugias = require('./paciente_cirugias');
+const EstudioDiagnostico = require('./estudio_diagnostico');
 
 // Asociaciones
 
@@ -107,6 +108,10 @@ EvolucionMedica.belongsTo(Medico, { foreignKey: 'ID_Medico', as: 'medico' });
 EvolucionMedica.hasMany(Tratamiento, { foreignKey: 'ID_EvolucionMedica', as: 'tratamientos' });
 Tratamiento.belongsTo(EvolucionMedica, { foreignKey: 'ID_EvolucionMedica' });
 
+//Una Evolución puede tener varios Estudios Diagnósticos
+EvolucionMedica.hasMany(EstudioDiagnostico, { foreignKey: 'ID_EvolucionMedica', as: 'estudios_solicitados' });
+EstudioDiagnostico.belongsTo(EvolucionMedica, { foreignKey: 'ID_EvolucionMedica', as: 'evolucion_origen' });
+
 // Un Tratamiento tiene medicamentos (Muchos a Muchos con detalles de dosis)
 Tratamiento.belongsToMany(Medicacion, { through: TratamientoMedicacion, foreignKey: 'ID_Tratamiento', otherKey: 'ID_Medicacion', as: 'medicamentos_recetados' });
 Medicacion.belongsToMany(Tratamiento, { through: TratamientoMedicacion, foreignKey: 'ID_Medicacion', otherKey: 'ID_Tratamiento' });
@@ -168,5 +173,6 @@ module.exports = {
   Tratamiento,
   TratamientoMedicacion,
   AdministracionMedicacion,
+  EstudioDiagnostico,
   PacienteCirugias
 };
