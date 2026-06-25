@@ -6,7 +6,7 @@ const evolucion_medica = sequelize.define('evolucion_medica', {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
-    field: 'ID' // En tu SQL es mayúscula
+    field: 'ID'
   },
   id_internacion: {
     type: DataTypes.INTEGER,

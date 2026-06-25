@@ -27,10 +27,6 @@ const tratamiento = sequelize.define('tratamiento', {
     type: DataTypes.STRING(50),
     field: 'Descripcion'
   },
-  frecuencia: {
-    type: DataTypes.STRING(50),
-    field: 'Frecuencia'
-  },
   duracion: {
     type: DataTypes.STRING(50),
     field: 'Duracion'
