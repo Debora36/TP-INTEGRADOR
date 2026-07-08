@@ -1,7 +1,7 @@
 const { Internacion, Paciente, Cama, Obra_Social, Plan, Medicacion, Enfermero,
      PacienteAntecedentesFamiliares, PacienteAlergias, PacienteEnfermedades, 
      PacienteMedicacionHabitual, CatalogoAlergias, CatalogoPatologias, EvaluacionIngreso, 
-     PacienteCirugias, AdministracionMedicacion, Tratamiento, TratamientoMedicacion,  sequelize} = require('../modelo');
+     PacienteCirugias, AdministracionMedicacion, Tratamiento, TratamientoMedicacion, EvolucionMedica, Medico, sequelize} = require('../modelo');
 const SignosVitales = require('../modelo/evolucion_signos_vitales');
 // Buscar internación por número de cama
 exports.buscarPorCama = async (req, res) => {
@@ -495,13 +495,25 @@ exports.mostrarAdministracion = async (req, res) => {
             where: { ID_Internacion: idInternacion }
         });
 
+        const evoluciones = await EvolucionMedica.findAll({
+            where: { id_internacion: internacion.ID || internacion.id } // Asegurate de usar el ID correcto
+        });
+        const idsEvoluciones = evoluciones.map(evo => evo.id);
 
         const tratamientos = await Tratamiento.findAll({
+            where: { 
+                id_evolucion_medica: idsEvoluciones,
+                estado: 'Activo'
+            },
             include: [
                 {
                     model: TratamientoMedicacion,
                     as: 'medicaciones', 
                     include: [{ model: Medicacion, as: 'medicamento' }]
+                },
+                {
+                    model: Medico,
+                    as: 'medico' 
                 }
             ]
         });

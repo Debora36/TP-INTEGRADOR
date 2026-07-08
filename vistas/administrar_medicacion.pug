@@ -73,16 +73,21 @@ html(lang="es")
                     //tratamientos indicados
                     .card.shadow-sm.mb-4
                         .card-header.bg-primary.text-white
-                            h5.mb-0 <i class="fas fa-user-md"></i> Tratamientos Indicados
+                            h5.mb-0 <i class="fas fa-user-md"></i> Tratamientos Activos
                         .card-body
                             if tratamientos && tratamientos.length > 0
                                 each trat in tratamientos
                                     .border.rounded.p-3.mb-3.bg-light
+
+                                        .mb-2
+                                            span.badge.bg-success= trat.tipo_tratamiento
+                                         
                                         p.mb-1 <strong>Médico:</strong> #{trat.medico ? trat.medico.nombre : 'No especificado'}
-                                        p.mb-2 <strong>Descripción:</strong> #{trat.Descripcion}
+                                        p.mb-2 <strong>Descripción:</strong> #{trat.descripcion} 
                                         
-                                        if trat.medicaciones && trat.medicaciones.length > 0
-                                            table.table.table-sm.mb-0
+                                        //- Validamos que sea farmacológico para mostrar la tabla
+                                        if trat.tipo_tratamiento === 'Farmacológico' && trat.medicaciones && trat.medicaciones.length > 0
+                                            table.table.table-sm.mb-0.mt-2
                                                 thead.table-secondary
                                                     tr
                                                         th Medicamento
@@ -91,13 +96,14 @@ html(lang="es")
                                                 tbody
                                                     each med in trat.medicaciones
                                                         tr
-                                                            td #{med.medicamento ? med.medicamento.nombre + ' (' + med.medicamento.presentacion + ')' : '-'}
-                                                            td= med.Dosis
-                                                            td= med.Frecuencia
-                                        else
+                                                            td #{med.medicamento ? med.medicamento.nombre : '-'}
+                                                            td= med.dosis 
+                                                            td= med.frecuencia 
+                                        else if trat.tipo_tratamiento === 'Farmacológico'
                                             p.text-muted.small.mb-0 Sin medicación cargada.
                             else
-                                p.text-muted.small No hay tratamientos activos.
+                                .alert.alert-info.mb-0.text-center
+                                    | No hay tratamientos activos para este paciente.
 
                 //formulario de administracion de medicacion
                 .col-lg-6

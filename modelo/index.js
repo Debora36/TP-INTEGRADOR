@@ -103,6 +103,9 @@ EvolucionMedica.belongsTo(Internacion, { foreignKey: 'ID_Internacion' });
 Medico.hasMany(EvolucionMedica, { foreignKey: 'ID_Medico', as: 'evoluciones_realizadas' });
 EvolucionMedica.belongsTo(Medico, { foreignKey: 'ID_Medico', as: 'medico' });
 
+// Relación: Un Tratamiento es indicado por un Médico
+Tratamiento.belongsTo(Medico, { foreignKey: 'id_medico', as: 'medico' });
+Medico.hasMany(Tratamiento, { foreignKey: 'id_medico', as: 'tratamientos_indicados' });
 
 // Una Evolución genera Tratamientos
 EvolucionMedica.hasMany(Tratamiento, { foreignKey: 'ID_EvolucionMedica', as: 'tratamientos' });

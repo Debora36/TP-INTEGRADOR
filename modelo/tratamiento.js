@@ -34,7 +34,11 @@ const tratamiento = sequelize.define('tratamiento', {
   tipo_tratamiento: {
         type: DataTypes.STRING(100),
         allowNull: false,
-    }
+    },
+  estado: {
+      type: DataTypes.STRING(20),
+      defaultValue: 'Activo'
+  }
 }, {
   tableName: 'tratamiento',
   timestamps: false
