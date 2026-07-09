@@ -1,0 +1,485 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Recepción Médicos
+    link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css", rel="stylesheet")
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css")
+    script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
+  
+  body.bg-light
+    //NAVBAR
+    .navbar.navbar-expand-sm.bg-info.navbar-dark.p-3.mb-4
+       .container-fluid
+           .navbar-brand
+               h4.display-6.px-4.text-white Sistema Hospitalario
+           .d-flex.ms-auto.align-items-center
+               if usuario
+                   span.text-white.me-2= usuario.nombre_usuario
+               a(href="/logout", title="Cerrar sesión")
+                   i.fas.fa-sign-out-alt.text-white
+
+    .container
+        //MENSAJES
+        if mensaje
+            .alert.alert-warning.text-center #{mensaje}
+
+    .container.mt-4
+        //Turnos
+        .card.shadow-sm.mb-4
+            .card-header.bg-primary.text-white
+                h5.mb-0 <i class="fas fa-calendar-check"></i> Mis Turnos Asignados
+            .card-body
+                if turnos && turnos.length > 0
+                    .table-responsive
+                        table.table.table-sm.table-hover
+                            thead.table-light
+                                tr
+                                    th Hora
+                                    th Paciente
+                                    th DNI
+                                    th Estado
+                            tbody
+                                each turno in turnos
+                                    tr
+                                        td= turno.hora
+                                        td #{turno.paciente ? turno.paciente.Nombre + ' ' + turno.paciente.Apellido : 'N/A'}
+                                        td #{turno.paciente ? turno.paciente.DNI : 'N/A'}
+                                        td 
+                                            if turno.estado === 'Presente'
+                                                span.badge.bg-success En Sala
+                                            else if turno.estado === 'Pendiente'
+                                                span.badge.bg-warning.text-dark Pendiente
+                                            else 
+                                                span.badge.bg-secondary= turno.estado || 'Desconocido'
+
+                else
+                    p.text-muted.small.text-center.mb-0 No registra turnos asignados para el día de hoy.
+
+        //Busqueda paciente
+        .card.shadow-sm.mb-4
+            .card-body
+                h5.card-title.text-center Buscar Paciente por DNI
+                form(action="/medicos/buscar" method="GET").d-flex.justify-content-center.gap-2
+                    input.form-control.w-50(type="number" name="numeroDNI" placeholder="Ingrese número de DNI" required)
+                    button.btn.btn-primary(type="submit") Buscar
+
+        //Se muestra la información del paciente si se encuentra
+        if paciente
+            .card.border-0.shadow-sm.mb-4
+                .card-body.bg-white
+                    .row.align-items-center
+                        .col-md-4.text-center
+                            h3.text-primary #{paciente.Nombre} #{paciente.Apellido}
+                            text-muted DNI: 
+                            strong #{paciente.DNI}
+
+                        .col-md-8
+                            .row.text-center.mt-2
+                                .col-md-3
+                                    p.mb-1.text-muted Fecha Nac.
+                                    strong= paciente.FechaNacimiento ? new Date(paciente.FechaNacimiento).toLocaleDateString('es-AR') : 'N/A'
+                                .col-md-3
+                                    p.mb-1.text-muted Obra Social
+                                    strong #{paciente.obra_social ? paciente.obra_social.nombre : 'N/A'}
+                                .col-md-3
+                                    p.mb-1.text-muted Plan
+                                    strong #{paciente.plan_detalle ? paciente.plan_detalle.nombre_plan : 'N/A'}
+                                .col-md-3
+                                    p.mb-1.text-muted N° Afiliado
+                                    strong #{paciente.numero_afiliado || 'N/A'}
+
+            .card.border-0.shadow-sm.mb-4
+                .card-body.bg-white
+                    .row
+                        .col-lg-4
+                            //historial de evoluciones
+                            .card.shadow-sm.mb-3
+                                .card-header.bg-info.text-white
+                                    h6.mb-0 Evoluciones Previas
+                                .card-body(style="max-height: 300px; overflow-y: auto;")
+                                    if evoluciones && evoluciones.length > 0
+                                        each evo in evoluciones
+                                            .border.rounded.p-2.mb-2.bg-white.shadow-sm
+                                                .d-flex.justify-content-between.mb-1
+                                                    span.badge.bg-light.text-dark.small
+                                                        i.fas.fa-calendar-alt.me-1
+                                                        | #{new Date(evo.fecha).toLocaleDateString('es-AR')}
+                                                    strong.small.text-primary= new Date(evo.fecha).toLocaleTimeString('es-AR', {hour: '2-digit', minute:'2-digit'})
+                                                
+                                                p.mb-1.small <strong>Diagnóstico:</strong> #{evo.diagnostico_evolutivo}
+                                                p.mb-1.small.text-muted <strong>Observaciones:</strong> #{evo.observaciones}
+                                                if evo.plan_atencion
+                                                    p.mb-0.small.text-secondary <strong>Plan:</strong> #{evo.plan_atencion}
+                                    else
+                                        p.text-muted.small.text-center.my-2 No hay evoluciones anteriores registradas.
+
+                            .card.shadow-sm.mb-3
+                                .card-header.bg-warning.text-dark
+                                    h6.mb-0 Estudios Diagnósticos
+                                .card-body.p-2
+                                    if estudios && estudios.length > 0
+                                        each est in estudios
+                                            .border.rounded.p-2.mb-2.bg-white.estudio-clickable(style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalEstudio" data-id=est.id data-tipo=est.tipo_estudio data-desc=est.descripcion data-resultado=(est.resultado || ''))
+                                                .d-flex.justify-content-between.align-items-center.mb-1
+                                                    strong.small= est.tipo_estudio
+                                                    if est.resultado
+                                                        span.badge.bg-success Realizado
+                                                    else
+                                                        span.badge.bg-danger Pendiente
+                                                
+                                                p.mb-1.small.text-muted= est.descripcion
+                                                
+    
+                                    else
+                                        p.text-muted.small.text-center.my-2 No se solicitaron estudios.
+
+                            //Tratamientos
+                            .card.shadow-sm.mb-3
+                                .card-header.bg-success.text-white
+                                    h6.mb-0 Tratamientos Indicados
+                                .card-body.p-2
+                                    if tratamientos && tratamientos.length > 0
+                                        each trat in tratamientos
+                                            .border.rounded.p-2.mb-2.bg-white
+                                                .d-flex.justify-content-between.align-items-center.mb-1
+                                                    div
+                                                        span.badge.bg-secondary.me-2= trat.tipo_tratamiento
+                                                        if trat.estado === 'Suspendido'
+                                                            span.badge.bg-danger Suspendido
+                                                        else if trat.estado === 'Finalizado'
+                                                            span.badge.bg-dark Finalizado
+                                                        else
+                                                            span.badge.bg-success Activo
+                                                    
+                                                    //Botones de acciones solo si el tratamiento esta activo
+                                                    if trat.estado === 'Activo' || !trat.estado
+                                                        .d-flex.gap-1
+                                                            //Finalizar tratamiento
+                                                            form(action=`/medicos/cambiar-estado-tratamiento/${trat.id}` method="POST" onsubmit="return confirm('¿Marcar tratamiento como Finalizado?');")
+                                                                input(type="hidden" name="dniPaciente" value=paciente.DNI)
+                                                                input(type="hidden" name="nuevoEstado" value="Finalizado")
+                                                                button.btn.btn-sm.btn-outline-dark.border-0(type="submit" title="Finalizar Tratamiento")
+                                                                    i.fas.fa-check-double
+                                                            
+                                                            //Suspender tratamiento
+                                                            form(action=`/medicos/cambiar-estado-tratamiento/${trat.id}` method="POST" onsubmit="return confirm('¿Suspender este tratamiento?');")
+                                                                input(type="hidden" name="dniPaciente" value=paciente.DNI)
+                                                                input(type="hidden" name="nuevoEstado" value="Suspendido")
+                                                                button.btn.btn-sm.btn-outline-danger.border-0(type="submit" title="Suspender Tratamiento")
+                                                                    i.fas.fa-ban
+
+                                                p.mb-1.small.text-dark <strong>Detalle:</strong> #{trat.descripcion}
+                                                if trat.duracion
+                                                    p.mb-1.small.text-muted <i class="fas fa-clock"></i> #{trat.duracion}
+                                                
+                                                //Medicacion farmacológica
+                                                if trat.tipo_tratamiento === 'Farmacológico' && trat.medicaciones && trat.medicaciones.length > 0
+                                                    hr.my-1.text-muted
+                                                    p.mb-1.small.fw-bold.text-success Medicación Indicada:
+                                                    ul.mb-0.small.ps-3
+                                                        each med in trat.medicaciones
+                                                            li
+                                                                | #{med.medicamento ? med.medicamento.nombre : 'Med. Desconocido'} - 
+                                                                strong Dosis: 
+                                                                | #{med.dosis} | 
+                                                                strong Frecuencia: 
+                                                                | #{med.frecuencia}
+                                    else
+                                        p.text-muted.small.text-center.my-2 No hay tratamientos registrados.
+
+     
+                        //Formulario de carga de evolución diaria
+                        .col-lg-8
+                            .card.shadow-sm
+                                .card-header.bg-primary.text-white
+                                    h5.mb-0Cargar Evolución Diaria
+                                .card-body
+                                    form#formEvolucion(action="/medicos/guardarEvolucion" method="POST")
+                                        input(type="hidden" name="internacion_id" value=internacion.ID)
+
+                                        .mb-3
+                                            label.form-label <strong>Observaciones / Examen Físico</strong>
+                                            textarea.form-control(name="observaciones" rows="3" placeholder="Ej: Paciente lúcido, afebril..." required)
+
+                                        .mb-3
+                                            label.form-label <strong>Diagnóstico Evolutivo Actual</strong>
+                                            input.form-control(type="text" name="diagnostico_evolutivo" placeholder="Ej: Neumonía en resolución" required)
+
+                                        .mb-3
+                                            label.form-label <strong>Plan de Atención</strong>
+                                            textarea.form-control(name="plan_atencion" rows="3" placeholder="Ej: Continuar pauta..." required)
+
+                                       
+                                        h6.mt-6.pt-4.pb-4 <strong> Órdenes Adicionales </strong>
+                                        
+                                        .row
+                                            //FORMULARIO ESTUDIOS
+                                            .col-md-6
+                                                .card.border-secondary.mb-3
+                                                    .card-header.bg-light.p-2.fw-bold Solicitar Estudio
+                                                    .card-body.p-2
+                                                        .d-flex.gap-1.mb-2
+                                                            select.form-select.form-select-sm#inputTipoEstudio(style="width: 40%")
+                                                                option(value="" disabled selected) Tipo...
+                                                                option(value="Laboratorio") Laboratorio
+                                                                option(value="Radiografía") Radiografía
+                                                                option(value="Tomografía") Tomografía
+                                                                option(value="Ecografía") Ecografía
+                                                            input.form-control.form-control-sm#inputDescEstudio(type="text" placeholder="Detalle...")
+                                                            button.btn.btn-sm.btn-primary#btnSumarEstudio(type="button") <i class="fas fa-plus"></i>
+                                                        
+                                                        .table-responsive.mt-2
+                                                            table.table.table-sm.table-bordered.align-middle.mb-0#tablaEstudios(style="display: none;")
+                                                                thead.table-light.small
+                                                                    tr
+                                                                        th Tipo
+                                                                        th Detalle
+                                                                        th.text-center(style="width: 40px")
+                                                                tbody#bodyEstudios
+                                                        p.text-muted.small.text-center.my-2#txtVacioEstudios No hay estudios sumados.
+
+                                            //FORMULARIO TRATAMIENTOS
+                                            .col-md-6
+                                                .card.border-secondary.mb-3
+                                                    .card-header.bg-light.p-2.fw-bold Indicar Tratamiento
+                                                    .card-body.p-2
+                                                        select.form-select.form-select-sm.mb-2#inputTipoTratamiento(onchange="verificarTipoTratamiento(this)")
+                                                            option(value="" disabled selected) Seleccione tipo...
+                                                            option(value="Farmacológico") Farmacológico
+                                                            option(value="Físico/Kinesiológico") Físico / Kinesiológico
+                                                            option(value="Otro") Otro
+                                                        
+                                                        input.form-control.form-control-sm.mb-2#inputDescTratamiento(type="text" placeholder="Descripción general...")
+                                                        input.form-control.form-control-sm.mb-2#inputDuracionTratamiento(type="text" placeholder="Duración (Ej: 7 días)")
+                                                        
+                                                        .border.rounded.p-2.bg-light.mb-2#bloqueMedicacion(style="display: none;")
+                                                            select.form-select.form-select-sm.mb-2#inputMedicamento
+                                                                option(value="" disabled selected) Catálogo medicamentos...
+                                                                if catalogoMedicamentos
+                                                                    each med in catalogoMedicamentos
+                                                                        option(value=med.id text-nombre=med.nombre) #{med.nombre} - #{med.presentacion}
+                                                            .row.g-1
+                                                                .col-6
+                                                                    input.form-control.form-control-sm#inputDosis(type="text" placeholder="Dosis")
+                                                                .col-6
+                                                                    input.form-control.form-control-sm#inputFrecuencia(type="text" placeholder="Frecuencia")
+                                                        
+                                                        .text-end.mb-2
+                                                            button.btn.btn-sm.btn-primary#btnSumarTratamiento(type="button") <i class="fas fa-plus me-1"></i>
+                                                        
+                                                        .table-responsive
+                                                            table.table.table-sm.table-bordered.align-middle.mb-0#tablaTratamientos(style="display: none;")
+                                                                thead.table-light.small
+                                                                    tr
+                                                                        th Tipo
+                                                                        th Detalle / Medicación
+                                                                        th.text-center(style="width: 40px")
+                                                                tbody#bodyTratamientos
+                                                        p.text-muted.small.text-center.my-2#txtVacioTratamientos No hay tratamientos sumados.
+
+                                        button.btn.btn-success.mt-4(type="submit") Guardar Cambios
+
+        //MODAL PARA RESULTADO DE ESTUDIOS
+        if paciente
+            .modal.fade#modalEstudio(tabindex="-1" aria-hidden="true")
+                .modal-dialog
+                    .modal-content
+                        .modal-header.bg-primary.text-white
+                            h5.modal-title#modalEstudioTitle Cargar Resultado
+                            button.btn-close.btn-close-white(type="button" data-bs-dismiss="modal" aria-label="Close")
+                        form(action="/medicos/cargarResultadoEstudio" method="POST")
+                            .modal-body
+                                input(type="hidden" name="id_estudio" id="modalEstudioId")
+                                input(type="hidden" name="dni_paciente" value=paciente.DNI)
+                                
+                                .mb-3
+                                    label.form-label.small.fw-bold Estudio Solicitado:
+                                    input.form-control.bg-light#modalEstudioDesc(type="text" readonly)
+                                
+                                .mb-3
+                                    label.form-label.small.fw-bold Informe Médico / Resultado:
+                                    textarea.form-control#modalEstudioResultado(name="resultado_estudio" rows="5" required placeholder="Escriba el informe aquí...")
+                            .modal-footer
+                                button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cerrar
+                                button.btn.btn-primary#btnGuardarResultado(type="submit") Guardar Informe
+
+            .row.justify-content-center.mb-5
+                .col-md-4.mb-4
+                    a(href=`/medicos/historial/${internacion.ID}`, class="text-decoration-none h-100")
+                        .card.h-100.shadow.text-center.border-0.hover-shadow
+                            i.fa-solid.fa-file-alt.fa-4x.text-info.mt-4
+                            .card-body
+                                h5.card-title.text-info Historia Clínica
+
+                .col-md-4.mb-4
+                    a(href=`/medicos/signos-vitales/${internacion.ID}`, class="text-decoration-none h-100")
+                        .card.h-100.shadow.text-center.border-0
+                            i.fa-solid.fa-heart-pulse.fa-4x.text-danger.mt-4
+                            .card-body
+                                h5.card-title.text-danger Registros de Signos Vitales
+
+                .col-md-4.mb-4
+                    a(href=`/medicos/medicacion-administrada/${internacion.ID}`, class="text-decoration-none h-100")
+                        .card.h-100.shadow.text-center.border-0
+                            i.fa-solid.fa-syringe.fa-4x.text-success.mt-4
+                            .card-body
+                                h5.card-title.text-success Registros de Medicación
+
+
+
+//SCRIPTS
+
+block scripts
+    script.
+        let contadorEstudios = 1000;
+        let contadorTratamientos = 1000;
+
+        // mostrar o ocultar
+        function verificarTipoTratamiento(selectElement) {
+            const panel = document.getElementById('bloqueMedicacion');
+            if (selectElement.value === 'Farmacológico') {
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+                document.getElementById('inputMedicamento').value = "";
+                document.getElementById('inputDosis').value = "";
+                document.getElementById('inputFrecuencia').value = "";
+            }
+        }
+
+        //modal para cargar resultado de estudio
+        const modalEstudioElement = document.getElementById('modalEstudio');
+        if (modalEstudioElement) {
+            modalEstudioElement.addEventListener('show.bs.modal', function (event) {
+                // event.relatedTarget es la tarjeta que hizo clic
+                const triggerElement = event.relatedTarget;
+                
+                const id = triggerElement.getAttribute('data-id');
+                const tipo = triggerElement.getAttribute('data-tipo');
+                const desc = triggerElement.getAttribute('data-desc');
+                const resultado = triggerElement.getAttribute('data-resultado');
+
+                document.getElementById('modalEstudioId').value = id;
+                document.getElementById('modalEstudioDesc').value = `${tipo} - ${desc}`;
+
+                const txtResultado = document.getElementById('modalEstudioResultado');
+                const btnGuardar = document.getElementById('btnGuardarResultado');
+                const modalTitle = document.getElementById('modalEstudioTitle');
+
+                if (resultado && resultado.trim() !== '') {
+                    modalTitle.innerText = "Ver Resultado de Estudio";
+                    txtResultado.value = resultado;
+                    txtResultado.setAttribute('readonly', true);
+                    btnGuardar.style.display = 'none';
+                } else {
+                    modalTitle.innerText = "Cargar Resultado de Estudio";
+                    txtResultado.value = '';
+                    txtResultado.removeAttribute('readonly');
+                    btnGuardar.style.display = 'block';
+                }
+            });
+        }
+
+        //agregar estudio
+        document.getElementById('btnSumarEstudio').addEventListener('click', function() {
+            const inputTipo = document.getElementById('inputTipoEstudio');
+            const inputDesc = document.getElementById('inputDescEstudio');
+            
+            if(!inputTipo.value || !inputDesc.value.trim()) return alert("Complete tipo y detalle del estudio.");
+            
+            document.getElementById('txtVacioEstudios').style.display = 'none';
+            document.getElementById('tablaEstudios').style.display = 'table';
+
+            // Crear una nueva fila para la tabla de estudios
+            const filaId = `fila-estudio-${contadorEstudios}`;
+            const html = `
+                <td>${inputTipo.value}</td>
+                <td>${inputDesc.value}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-xs text-danger p-0" onclick="eliminarFila('${filaId}', 'tablaEstudios', 'txtVacioEstudios')"><i class="fas fa-trash"></i></button>
+                    <input type="hidden" name="estudios[${contadorEstudios}][tipo]" value="${inputTipo.value}">
+                    <input type="hidden" name="estudios[${contadorEstudios}][descripcion]" value="${inputDesc.value}">
+                </td>
+            `;
+            
+            const tr = document.createElement('tr');
+            tr.id = filaId;
+            tr.innerHTML = html;
+            document.getElementById('bodyEstudios').appendChild(tr);
+            
+            inputTipo.value = "";
+            inputDesc.value = "";
+
+            contadorEstudios++;
+        });
+     
+
+        //agregar tratamiento
+        document.getElementById('btnSumarTratamiento').addEventListener('click', function() {
+            const inputTipo = document.getElementById('inputTipoTratamiento');
+            const inputDesc = document.getElementById('inputDescTratamiento');
+            const inputDuracion = document.getElementById('inputDuracionTratamiento');
+            
+            if(!inputTipo.value || !inputDesc.value.trim()) return alert("Indique tipo y descripción.");
+            
+            let detalleTexto = `${inputDesc.value} (${inputDuracion.value || 'Sin pauta'})`;
+            let inputsOcultos = `
+                <input type="hidden" name="tratamientos[${contadorTratamientos}][tipo]" value="${inputTipo.value}">
+                <input type="hidden" name="tratamientos[${contadorTratamientos}][descripcion]" value="${inputDesc.value}">
+                <input type="hidden" name="tratamientos[${contadorTratamientos}][duracion]" value="${inputDuracion.value}">
+            `;
+            
+            if (inputTipo.value === 'Farmacológico') {
+                const selectMed = document.getElementById('inputMedicamento');
+                const valDosis = document.getElementById('inputDosis').value;
+                const valFrec = document.getElementById('inputFrecuencia').value;
+                
+                if(!selectMed.value || !valDosis.trim() || !valFrec.trim()) return alert("Debe indicar medicamento, dosis y frecuencia.");
+                
+                const nombreMed = selectMed.options[selectMed.selectedIndex].getAttribute('text-nombre');
+                detalleTexto += `<br><small class="text-primary"> ${nombreMed} - Dosis: ${valDosis} - Frec: ${valFrec}</small>`;
+                
+                inputsOcultos += `
+                    <input type="hidden" name="tratamientos[${contadorTratamientos}][med_id]" value="${selectMed.value}">
+                    <input type="hidden" name="tratamientos[${contadorTratamientos}][dosis]" value="${valDosis}">
+                    <input type="hidden" name="tratamientos[${contadorTratamientos}][frecuencia]" value="${valFrec}">
+                `;
+            }
+            
+            document.getElementById('txtVacioTratamientos').style.display = 'none';
+            document.getElementById('tablaTratamientos').style.display = 'table';
+            
+            const filaId = `fila-trat-${contadorTratamientos}`;
+            const tr = document.createElement('tr');
+            tr.id = filaId;
+            tr.innerHTML = `
+                <td><small class="badge bg-secondary">${inputTipo.value}</small></td>
+                <td>${detalleTexto}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-xs text-danger p-0" onclick="eliminarFila('${filaId}', 'tablaTratamientos', 'txtVacioTratamientos')"><i class="fas fa-trash"></i></button>
+                    ${inputsOcultos}
+                </td>
+            `;
+            document.getElementById('bodyTratamientos').appendChild(tr);
+            
+            inputTipo.value = ""; inputDesc.value = ""; inputDuracion.value = "";
+            document.getElementById('bloqueMedicacion').style.display = 'none';
+            document.getElementById('inputMedicamento').value = ""; document.getElementById('inputDosis').value = ""; document.getElementById('inputFrecuencia').value = "";
+            contadorTratamientos++;
+        });
+
+        //borrar fila de tabla y mostrar mensaje si queda vacía
+        function eliminarFila(idFila, idTabla, idTextoVacio) {
+            const fila = document.getElementById(idFila);
+            if (!fila) return;
+            const tbody = fila.parentElement;
+            fila.remove();
+            
+            if (tbody.children.length === 0) {
+                document.getElementById(idTabla).style.display = 'none';
+                document.getElementById(idTextoVacio).style.display = 'block';
+            }
+        }
+

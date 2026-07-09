@@ -1,0 +1,80 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Medicaion administrada
+    link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css", rel="stylesheet")
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css")
+    script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
+  
+  body.bg-light
+
+    .navbar.navbar-expand-sm.bg-info.navbar-dark.p-3.mb-4
+       .container-fluid
+           .navbar-brand
+               h4.display-6.px-4.text-white Sistema Hospitalario
+           .d-flex.ms-auto.align-items-center
+               if usuario
+                   span.text-white.me-2= usuario.nombre_usuario
+               a(href="/logout", title="Cerrar sesión")
+                   i.fas.fa-sign-out-alt.text-white
+
+
+
+    .container
+        .card.shadow-sm.border-0
+            .card-header.bg-white
+                h5.text-info Historial de medicación administrada
+            .card-body
+                if medicaciones && medicaciones.length > 0
+                    .table-responsive
+                        table.table.table-hover.align-middle
+                            thead.table-success
+                                tr
+                                    th Fecha y Hora
+                                    th Enfermero/a
+                                    th Motivo
+                                    th Medicamento
+                                    th Dosis
+                                    th Notas
+                            tbody
+                                each med in medicaciones
+                                    tr
+                                        td <strong>#{new Date(med.fecha_hora).toLocaleString('es-AR', {dateStyle: 'short', timeStyle: 'short'})}</strong>
+                                        td 
+                                            | #{med.enfermero ? med.enfermero.nombre : 'No registrado'}
+                                        td
+                                            span.badge.bg-secondary= med.tipo_administracion
+                                        td 
+                                            | #{med.medicamento_libre ? med.medicamento_libre.nombre : 'Sin especificar'}
+                                
+                                        td.fw-bold.text-primary= med.dosis_aplicada
+                                        td.small.text-muted= med.notas || '-'
+                else
+                    tr
+                        td.text-center.text-muted.py-4(colspan="6") 
+                            i.fas.fa-info-circle.me-2
+                            | No hay registros de medicación para esta internación.
+
+        
+        .row.justify-content-center.mb-5.mt-4
+            .col-md-4.mb-4
+                a(href=`/medicos/historial/${internacion.ID}`, class="text-decoration-none h-100")
+                    .card.h-100.shadow.text-center.border-0.hover-shadow
+                        i.fa-solid.fa-file-alt.fa-4x.text-info.mt-4
+                        .card-body
+                            h5.card-title.text-info Historia Clínica
+
+            .col-md-4.mb-4
+                a(href=`/medicos/signos-vitales/${internacion.ID}`, class="text-decoration-none h-100")
+                    .card.h-100.shadow.text-center.border-0
+                        i.fa-solid.fa-heart-pulse.fa-4x.text-danger.mt-4
+                        .card-body
+                            h5.card-title.text-danger Registros de Signos Vitales
+            .col-md-4.mb-4
+                a(href=`/medicos/buscar?numeroDNI=${internacion.paciente.DNI}`, class="text-decoration-none h-100")
+                    .card.h-100.shadow.text-center.border-0
+                        i.fa-solid.fa-file-medical.fa-4x.text-warning.mt-4
+                        .card-body
+                            h5.card-title.text-warning Evoluciones y Estudios

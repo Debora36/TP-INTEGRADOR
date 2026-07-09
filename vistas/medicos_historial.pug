@@ -1,0 +1,361 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Historial del paciente
+    link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css", rel="stylesheet")
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css")
+    script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
+  
+  body.bg-light
+
+    .navbar.navbar-expand-sm.bg-info.navbar-dark.p-3.mb-4
+        .container-fluid
+            .navbar-brand
+                h4.display-6.px-4.text-white Sistema Hospitalario
+            .d-flex.ms-auto.align-items-center
+                if usuario
+                    span.text-white.me-2= usuario.nombre_usuario
+                a(href="/logout", title="Cerrar sesión")
+                    i.fas.fa-sign-out-alt.text-white
+
+    .container
+      //- MENSAJES
+      if mensaje
+        .alert.alert-success(role='alert')= mensaje
+      if errores
+        .alert.alert-danger(role='alert')= errores
+
+      //RESUMEN DEL PACIENTE
+      .card.border-0.shadow-sm.mb-4
+        .card-body.bg-white
+          .row.align-items-center
+            .col-md-4.text-center
+              h3.text-primary #{paciente.Nombre} #{paciente.Apellido}
+              span.text-muted DNI: 
+              strong #{paciente.DNI}
+            
+            .col-md-8
+              .row
+                .col-md-3
+                  p.mb-1.text-muted Fecha Nacimiento
+                  strong #{paciente.FechaNacimiento ? new Date(paciente.FechaNacimiento).toLocaleDateString('es-AR') : 'N/A'}
+                .col-md-3
+                  p.mb-1.text-muted Obra Social
+                  strong #{internacion.paciente.obra_social ? internacion.paciente.obra_social.nombre : 'N/A'}
+                .col-md-3
+                  p.mb-1.text-muted Plan
+                  strong #{internacion.paciente.plan_detalle ? internacion.paciente.plan_detalle.nombre_plan : 'N/A'}
+                .col-md-3
+                  p.mb-1.text-muted Número de afiliado
+                  strong #{internacion.paciente.numero_afiliado || 'N/A'}
+
+
+      //FORMULARIO PRINCIPAL
+      form#formHistoria(action="/medicos/actualizarHistoria" method="POST")
+        //- Inputs ocultos vitales
+        input(type="hidden" name="id_internacion" value=internacion.ID)
+        input(type="hidden" name="id_paciente" value=paciente.id)
+
+        .row
+          .col-md-4
+            .card.shadow-sm.mb-3
+              .card-body
+                h6.text-muted Alergias
+                div.border.rounded.p-2.mb-3(style="max-height: 150px; overflow-y: auto;")
+                  if todasAlergias
+                    each alergia in todasAlergias
+                      - const tiene = paciente.alergias && paciente.alergias.some(a => a.id === alergia.id)
+                      .form-check
+                        input.form-check-input(
+                          type="checkbox" 
+                          name="alergias[]" 
+                          value=alergia.id 
+                          id=`alergia_${alergia.id}`
+                          checked=tiene
+                        )
+                        label.form-check-label(for=`alergia_${alergia.id}`)= alergia.nombre
+
+                h6.text-muted Patologías Previas
+                div.border.rounded.p-2(style="max-height: 150px; overflow-y: auto;")
+                  if todasPatologias
+                    each opcion in todasPatologias
+                      - const tienePato = paciente.patologias && paciente.patologias.some(p => p.id === opcion.id)
+                      .form-check
+                        input.form-check-input(
+                          type="checkbox" 
+                          name="patologias[]" 
+                          value=opcion.id 
+                          id=`pato_${opcion.id}`
+                          checked=tienePato
+                        )
+                        label.form-check-label(for=`pato_${opcion.id}`)= opcion.nombre
+
+
+          .col-md-8
+            //MEDICACIÓN HABITUAL
+            .card.shadow-sm.mb-4
+              .card-header.bg-white
+                h5.text-primary Medicación Habitual
+              .card-body
+                .row.g-2.align-items-end.mb-3
+                  .col-md-5
+                    label.form-label Medicamento
+                    input.form-control(list="listaMedicamentosData" id="inputMedicamento" placeholder="Escribe para buscar..." autocomplete="off")
+                    datalist#listaMedicamentosData
+                      if listaMedicamentos
+                        each med in listaMedicamentos
+                          option(value=`${med.nombre} (${med.presentacion || ''})` data-id=med.id)
+                  
+                  .col-md-3
+                    label.form-label Dosis
+                    input.form-control(type="text" id="inputDosis" placeholder="Ej: 500mg")
+                  
+                  .col-md-3
+                    label.form-label Frecuencia
+                    input.form-control(type="text" id="inputFrecuencia" placeholder="Ej: c/8hs")
+                  
+                  .col-md-1
+                    button.btn.btn-success.w-100(type="button" onclick="agregarMedicamento()") <i class="fas fa-plus"></i>
+
+                table.table.table-sm.table-hover.mt-3
+                  thead.table-light
+                    tr
+                      th Medicamento
+                      th Dosis
+                      th Frecuencia
+                      th Acción
+                  tbody#tablaMedicamentosBody
+                    if paciente.medicacion_habitual && paciente.medicacion_habitual.length > 0
+                      each item, index in paciente.medicacion_habitual
+                        tr(id=`fila-med-${index}`)
+                          td= item.Medicacion ? item.Medicacion.nombre : 'Desconocido'
+                          td= item.dosis_diaria
+                          td= item.frecuencia
+                          td
+                            button.btn.btn-danger.btn-sm(type="button" onclick=`eliminarFila('fila-med-${index}')`) <i class="fas fa-trash"></i>
+                            input(type="hidden" name=`medicamentos[${index}][id]` value=item.id_medicacion)
+                            input(type="hidden" name=`medicamentos[${index}][dosis]` value=item.dosis_diaria)
+                            input(type="hidden" name=`medicamentos[${index}][frecuencia]` value=item.frecuencia)
+
+            //ANTECEDENTES FAMILIARES
+            .card.shadow-sm.mb-4
+              .card-header.bg-white
+                h5.text-info Antecedentes Familiares
+              .card-body
+                .row.g-2.align-items-end.mb-3
+                  .col-md-6
+                    label.form-label Patología
+                    input.form-control(list="listaPatologiasFam" id="inputPatoFam" placeholder="Buscar patología...")
+                    datalist#listaPatologiasFam
+                      if todasPatologias
+                        each pato in todasPatologias
+                          option(value=pato.nombre data-id=pato.id)
+                  .col-md-5
+                    label.form-label Parentesco
+                    select.form-select(id="inputParentesco")
+                      option(value="Padre") Padre
+                      option(value="Madre") Madre
+                      option(value="Abuelo/a") Abuelo/a
+                      option(value="Hermano/a") Hermano/a
+                      option(value="Hijo/a") Hijo/a
+                  .col-md-1
+                    button.btn.btn-success.w-100(type="button" onclick="agregarAntecedente()") <i class="fas fa-plus"></i>
+
+                table.table.table-sm.table-hover.mt-3
+                  thead.table-light
+                    tr
+                      th Patología
+                      th Parentesco
+                      th Acción
+                  tbody#tablaAntecedentesBody
+                    if paciente.antecedentes_familiares && paciente.antecedentes_familiares.length > 0
+                      each ant, index in paciente.antecedentes_familiares 
+                        tr(id=`fila-ant-${index}`)
+                          td= ant.Patologia ? ant.Patologia.nombre : 'Desconocido'
+                          td= ant.parentesco
+                          td
+                            button.btn.btn-danger.btn-sm(type="button" onclick=`eliminarFila('fila-ant-${index}')`) <i class="fas fa-trash"></i>
+                            input(type="hidden" name=`antecedentes[${index}][id]` value=ant.id_patologia)
+                            input(type="hidden" name=`antecedentes[${index}][parentesco]` value=ant.parentesco)
+
+            //CIRUGÍAS PREVIAS
+            .card.shadow-sm.mb-4
+              .card-header.bg-white
+                h5.text-secondary Cirugías Previas
+              .card-body
+                .row.g-2.align-items-end.mb-3
+                  .col-md-6
+                    label.form-label Nombre de la Cirugía
+                    input.form-control(type="text" id="inputCirugia" placeholder="Ej: Apendicectomía")
+                  .col-md-6
+                    label.form-label Fecha de la Cirugía
+                    input.form-control(type="date" id="inputFechaCirugia")
+                .row.g-2.align-items-end.mb-3
+                  .col-md-11
+                    label.form-label Detalles adicionales (opcional)
+                    textarea.form-control(id="inputDetallesCirugia" rows="2" placeholder="Complicaciones, anestesia, etc.")
+                  .col-md-1
+                    button.btn.btn-success.w-100(type="button" onclick="agregarCirugia()") <i class="fas fa-plus"></i>
+
+                table.table.table-sm.table-hover.mt-3
+                  thead.table-light
+                    tr
+                      th Cirugía
+                      th Fecha
+                      th Observaciones
+                      th Acción
+                  tbody#tablaCirugiasBody
+                    if paciente.cirugias && paciente.cirugias.length > 0
+                      each cir, index in paciente.cirugias
+                        tr(id=`fila-cir-${index}`)
+                          td= cir.cirugia
+                          td= cir.fecha ? new Date(cir.fecha).toLocaleDateString('es-AR') : 'Sin fecha'
+                          td= cir.observaciones || ''
+                          td
+                            button.btn.btn-danger.btn-sm(type="button" onclick=`eliminarFila('fila-cir-${index}')`) <i class="fas fa-trash"></i>
+                            input(type="hidden" name=`cirugias[${index}][nombre]` value=cir.cirugia)
+                            input(type="hidden" name=`cirugias[${index}][fecha]` value=(cir.fecha ? cir.fecha : ''))
+                            input(type="hidden" name=`cirugias[${index}][observaciones]` value=(cir.observaciones || ''))
+
+
+        button.btn.btn-success.btn-lg(type="submit") 
+            i.fas.fa-save.me-1
+            | Guardar Cambios Historial
+
+        .row.justify-content-center.mb-5.mt-4
+            .col-md-4.mb-4
+                a(href=`/medicos/signos-vitales/${internacion.ID}`, class="text-decoration-none h-100")
+                    .card.h-100.shadow.text-center.border-0
+                        i.fa-solid.fa-heart-pulse.fa-4x.text-danger.mt-4
+                        .card-body
+                            h5.card-title.text-danger Registros de Signos Vitales
+            .col-md-4.mb-4
+                a(href=`/medicos/medicacion-administrada/${internacion.ID}`, class="text-decoration-none h-100")
+                    .card.h-100.shadow.text-center.border-0
+                        i.fa-solid.fa-syringe.fa-4x.text-success.mt-4
+                        .card-body
+                            h5.card-title.text-success Registros de Medicación
+            .col-md-4.mb-4
+                a(href=`/medicos/buscar?numeroDNI=${internacion.paciente.DNI}`, class="text-decoration-none h-100")
+                    .card.h-100.shadow.text-center.border-0
+                        i.fa-solid.fa-file-medical.fa-4x.text-warning.mt-4
+                        .card-body
+                            h5.card-title.text-warning Evoluciones y Estudios
+
+    //SCRIPTS
+    script.
+        let contadorMed = 1000;
+        let contadorAnt = 1000;
+        let contadorCir = 1000;
+
+        function agregarMedicamento() {
+          const inputNombre = document.getElementById('inputMedicamento');
+          const inputDosis = document.getElementById('inputDosis');
+          const inputFrecuencia = document.getElementById('inputFrecuencia');
+          const datalist = document.getElementById('listaMedicamentosData');
+          
+          if (!inputNombre.value || !inputDosis.value) return alert("Complete medicamento y dosis.");
+
+          let idMedicamento = null;
+          const opciones = datalist.options;
+          for (let i = 0; i < opciones.length; i++) {
+              if (opciones[i].value === inputNombre.value) {
+                  idMedicamento = opciones[i].getAttribute('data-id');
+                  break; 
+              }
+          }
+
+          if (!idMedicamento) return alert("Selecciona un medicamento válido de la lista.");
+
+          const filaId = `fila-med-${contadorMed}`;
+          const html = `
+              <td>${inputNombre.value}</td>
+              <td>${inputDosis.value}</td>
+              <td>${inputFrecuencia.value}</td>
+              <td>
+                  <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila('${filaId}')"><i class="fas fa-trash"></i></button>
+                  <input type="hidden" name="medicamentos[${contadorMed}][id]" value="${idMedicamento}">
+                  <input type="hidden" name="medicamentos[${contadorMed}][dosis]" value="${inputDosis.value}">
+                  <input type="hidden" name="medicamentos[${contadorMed}][frecuencia]" value="${inputFrecuencia.value}">
+              </td>
+          `;
+
+          const tr = document.createElement('tr');
+          tr.id = filaId;
+          tr.innerHTML = html;
+          document.getElementById('tablaMedicamentosBody').appendChild(tr);
+          
+          inputNombre.value = ''; inputDosis.value = ''; inputFrecuencia.value = '';
+          contadorMed++;
+        }
+
+        function agregarAntecedente() {
+            const inputNombre = document.getElementById('inputPatoFam');
+            const parentesco = document.getElementById('inputParentesco').value;
+            const list = document.getElementById('listaPatologiasFam');
+            
+            const option = Array.from(list.options).find(opt => opt.value === inputNombre.value);
+            const idPatologia = option ? option.getAttribute('data-id') : null;
+
+            if (!idPatologia) return alert("Seleccione una patología válida.");
+
+            const filaId = `fila-ant-${contadorAnt}`;
+            const html = `
+                <td>${inputNombre.value}</td>
+                <td>${parentesco}</td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila('${filaId}')"><i class="fas fa-trash"></i></button>
+                    <input type="hidden" name="antecedentes[${contadorAnt}][id]" value="${idPatologia}">
+                    <input type="hidden" name="antecedentes[${contadorAnt}][parentesco]" value="${parentesco}">
+                </td>
+            `;
+
+            const tr = document.createElement('tr');
+            tr.id = filaId;
+            tr.innerHTML = html;
+            document.getElementById('tablaAntecedentesBody').appendChild(tr);
+            
+            inputNombre.value = '';
+            contadorAnt++;
+        }
+
+        function agregarCirugia() {
+            const inputNombre = document.getElementById('inputCirugia');
+            const inputFecha = document.getElementById('inputFechaCirugia');
+            const inputObservaciones = document.getElementById('inputDetallesCirugia');
+
+            if (!inputNombre.value) return alert("Ingrese el nombre de la cirugía.");
+
+            let fechaMostrada = 'Sin fecha';
+            if (inputFecha.value) {
+                const partesFecha = inputFecha.value.split('-');
+                fechaMostrada = `${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]}`;
+            }
+
+            const filaId = `fila-cir-${contadorCir}`;
+            const html = `
+                <td>${inputNombre.value}</td>
+                <td>${fechaMostrada}</td>
+                <td>${inputObservaciones.value}</td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila('${filaId}')"><i class="fas fa-trash"></i></button>
+                    <input type="hidden" name="cirugias[${contadorCir}][nombre]" value="${inputNombre.value}">
+                    <input type="hidden" name="cirugias[${contadorCir}][fecha]" value="${inputFecha.value}">
+                    <input type="hidden" name="cirugias[${contadorCir}][observaciones]" value="${inputObservaciones.value}">
+                </td>
+            `;
+
+            const tr = document.createElement('tr');
+            tr.id = filaId;
+            tr.innerHTML = html;
+            document.getElementById('tablaCirugiasBody').appendChild(tr);
+
+            inputNombre.value = ''; inputFecha.value = ''; inputObservaciones.value = '';
+            contadorCir++;
+        }
+
+        function eliminarFila(id) {
+            document.getElementById(id).remove();
+        }
