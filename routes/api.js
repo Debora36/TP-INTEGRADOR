@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const { verificarSesion, verificarRol } = require('../middleware/auth');
 const PlanObraSocial = require('../modelo/plan_obra_social');
-
-router.get('/api/planes/:obraId', async (req, res) => {
+router.use(verificarSesion);
+router.use(verificarRol('Recepcionista'));
+router.get('/planes/:obraId', async (req, res) => {
   try {
     const planes = await PlanObraSocial.findAll({
       where: { obra_social_id: req.params.obraId },

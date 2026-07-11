@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const { verificarSesion, verificarRol } = require('../middleware/auth');
 const medicosController = require('../controller/medicosController'); 
-
+router.use(verificarSesion);
+router.use(verificarRol('Médico'));
 // Cuando el médico entra a la sección principal
 router.get('/', medicosController.buscarPacienteMedico);
 router.get('/buscar', medicosController.buscarPacienteMedico);

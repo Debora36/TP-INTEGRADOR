@@ -483,7 +483,14 @@ exports.mostrarAdministracion = async (req, res) => {
     try {
 
         const internacion = await Internacion.findByPk(idInternacion, {
-            include: [{ model: Paciente, as: 'paciente' }]
+            include: [{ 
+                model: Paciente, 
+                as: 'paciente',
+                include: [
+                    {model: Obra_Social, as: 'obra_social'},
+                    {model: Plan, as: 'plan_detalle' }
+                ]
+            }]
         });
 
         if (!internacion) {

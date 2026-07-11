@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const { verificarSesion, verificarRol } = require('../middleware/auth');
 const registroController = require('../controller/registroadmision');
 const { editarDesdeModificar } = require('../controller/registroadmision');
+router.use(verificarSesion);
+router.use(verificarRol('Recepcionista'));
 router.get('/', registroController.formularioAdmision);
 router.get('/editar', editarDesdeModificar);
 router.post('/urgencia', registroController.crearPacienteUrgencia);

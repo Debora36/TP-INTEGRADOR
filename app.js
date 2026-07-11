@@ -5,6 +5,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 const mysql = require('mysql2');
 const sequelize = require('./db');
+const { verificarSesion, verificarRol } = require('./middleware/auth');
 
 app.set('views', path.join(__dirname, 'vistas'));
 app.set('view engine', 'pug');
@@ -20,10 +21,11 @@ app.use((req, res, next) => {
 });
 
 const session = require('express-session');
+
 app.use(session({
-  secret: 'mi_clave_secreta',
+  secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
 }));
 
 app.use((req, res, next) => {
@@ -31,11 +33,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Función de sesión
-function verificarSesion(req, res, next) {
-  if (req.session.usuario) next();
-  else res.redirect('/');
-}
 
 // Importar rutas
 const registroPacienteRoutes = require('./routes/nuevopaciente');
@@ -54,17 +51,18 @@ app.use('/admision', registroAdmisionRoutes);
 app.use('/login', loginRouter);
 app.use('/logout', logoutRouter);
 app.use('/habitaciones', habitacionesRoutes);
-app.use(rutasAPI);//para cargar los planes de obra social
+app.use('/api', rutasAPI);//para cargar los planes de obra social
 app.use('/Modificar', require('./routes/modificar'));//para buscar/editar/eliminar internaciones
 app.use('/turnos', require('./routes/turnos'));
 app.use('/medicos', require('./routes/medicos'));
-app.get('/enfermeria', (req, res) => {
+app.get('/enfermeria', verificarSesion, (req, res) => {
   res.redirect('/enfermeria/buscar');
 });
 app.use('/enfermeria', require('./routes/enfermeria'));
+
 // Vistas protegidas: solo para usuarios autenticados
 const Medico = require('./modelo/medico');
-app.get('/recepcionista', verificarSesion, async (req, res) => {
+app.get('/recepcionista', verificarSesion, verificarRol('Recepcionista'), async (req, res) => {
    try {
     const medicos = await Medico.findAll({ order: [['nombre', 'ASC']] });
     res.render('recepcion', { usuario: req.session.usuario, medicos });
@@ -73,9 +71,10 @@ app.get('/recepcionista', verificarSesion, async (req, res) => {
     res.status(500).send('Error al cargar la vista de recepción');
   }
 });
-app.get('/modificar', verificarSesion, (req, res) => {
+app.get('/modificar', verificarSesion, verificarRol('Recepcionista'), (req, res) => {
   res.render('modificar', { usuario: req.session.usuario });
 });
+
 
 // Página principal: inicio de sesión
 app.get('/', (req, res) => {

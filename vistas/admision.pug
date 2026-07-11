@@ -235,7 +235,7 @@ html(lang="en")
           script.
             document.addEventListener('DOMContentLoaded', function () {
               document.getElementById('nombrePaciente').textContent = "#{internacion.paciente.Nombre} #{internacion.paciente.Apellido}";
-              document.getElementById('ID_Paciente').value = "#{internacion.paciente.ID}";
+              document.getElementById('ID_Paciente').value = "#{internacion.paciente.id}";
               document.getElementById('Genero').value = "#{internacion.paciente.Genero}";
               document.getElementById('dni').value = "#{internacion.paciente.DNI}";
               document.getElementById('dniOculto').value = "#{internacion.paciente.DNI}";

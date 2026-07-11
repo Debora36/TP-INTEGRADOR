@@ -1,8 +1,9 @@
+const bcrypt = require('bcrypt');
 const Usuario = require('../modelo/usuario');
 const {Enfermero, Medico } = require('../modelo');
 exports.login = async (req, res) => {
   const { nombre_usuario, contrasena, rol } = req.body;
-    console.log('Datos recibidos:', nombre_usuario, contrasena, rol);
+
   try {
     const user = await Usuario.findOne({
       where: { nombre_usuario, rol }
@@ -11,7 +12,8 @@ exports.login = async (req, res) => {
     if (!user) {
         return res.status(401).send('Usuario o rol incorrecto');
     }
-    if (user.contrasena !== contrasena) {
+    const passwordCorrecta = await bcrypt.compare(contrasena, user.contrasena);
+    if (!passwordCorrecta) {
       return res.status(401).send('Contraseña incorrecta');
     }
 
@@ -31,7 +33,7 @@ exports.login = async (req, res) => {
 
         if (perfilEnfermero) {
             datosSesion.id_perfil = perfilEnfermero.id;
-            console.log("Enfermero detectado ID:", perfilEnfermero.id);
+
         } else {
             console.warn("Usuario es enfermero pero no tiene perfil en tabla 'enfermero'");
         }
@@ -48,7 +50,7 @@ exports.login = async (req, res) => {
 
     // guardo el objeto completo en la sesión
     req.session.usuario = datosSesion;
-    console.log("Sesión iniciada para usuario:", datosSesion);
+
     switch (user.rol) {
       case 'Recepcionista':
         return res.redirect('/recepcionista');
