@@ -6,15 +6,20 @@ exports.login = async (req, res) => {
 
   try {
     const user = await Usuario.findOne({
-      where: { nombre_usuario, rol }
+      where: { nombre_usuario } 
     });
 
-    if (!user) {
-        return res.status(401).send('Usuario o rol incorrecto');
+    if (!user){
+        return res.render('index', { error: 'El usuario no existe.' });
     }
+
+    if (user.rol !== rol) {
+        return res.render('index', { error: 'El usuario no tiene permisos para este rol.' });
+    }
+    
     const passwordCorrecta = await bcrypt.compare(contrasena, user.contrasena);
     if (!passwordCorrecta) {
-      return res.status(401).send('Contraseña incorrecta');
+      return res.render('index', { error: 'La contraseña ingresada es incorrecta.' });
     }
 
     let datosSesion = {

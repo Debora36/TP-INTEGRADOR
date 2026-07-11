@@ -18,6 +18,10 @@ html(lang="en")
         img(src="/img/logo-hospital.png", alt="")
         form(action="/login" method="post")
           h2 Bienvenido/a
+          if error
+            .alert.alert-danger.alert-dismissible.fade.show.shadow-sm(role="alert")
+                strong #{error}
+                button.btn-close(type="button" data-bs-dismiss="alert" aria-label="Cerrar")
           .form-input.input-icon
             i.fas.fa-user
             input(type="text", id="user", name="nombre_usuario" required, placeholder="Usuario")
