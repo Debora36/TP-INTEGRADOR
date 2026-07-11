@@ -1,0 +1,17 @@
+if internacion && internacion.paciente
+    .modal.fade#modalConfirmarAlta(tabindex="-1" aria-labelledby="modalAltaLabel" aria-hidden="true")
+        .modal-dialog.modal-dialog-centered
+            .modal-content
+                .modal-header.bg-warning
+                    h5.modal-title#modalAltaLabel Confirmar Alta Médica
+                    button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+                .modal-body
+                    p ¿Estás seguro que deseás dar de alta al paciente 
+                        strong #{internacion.paciente.Nombre} #{internacion.paciente.Apellido}
+                        | ? 
+                    p.text-muted.mb-0 Esta acción registrará la fecha y hora de salida actual.
+                .modal-footer
+                    button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+                    form(action="/medicos/procesar-alta" method="POST")
+                        input(type="hidden" name="id_internacion" value=internacion.ID)
+                        button.btn.btn-success(type="submit") Sí, procesar alta

@@ -59,22 +59,30 @@ html(lang="es")
 
         
         .row.justify-content-center.mb-5.mt-4
-            .col-md-4.mb-4
+            .col-md-3.mb-4
                 a(href=`/medicos/historial/${internacion.ID}`, class="text-decoration-none h-100")
                     .card.h-100.shadow.text-center.border-0.hover-shadow
                         i.fa-solid.fa-file-alt.fa-4x.text-info.mt-4
                         .card-body
                             h5.card-title.text-info Historia Clínica
 
-            .col-md-4.mb-4
+            .col-md-3.mb-4
                 a(href=`/medicos/signos-vitales/${internacion.ID}`, class="text-decoration-none h-100")
                     .card.h-100.shadow.text-center.border-0
                         i.fa-solid.fa-heart-pulse.fa-4x.text-danger.mt-4
                         .card-body
                             h5.card-title.text-danger Registros de Signos Vitales
-            .col-md-4.mb-4
+            .col-md-3.mb-4
                 a(href=`/medicos/buscar?numeroDNI=${internacion.paciente.DNI}`, class="text-decoration-none h-100")
                     .card.h-100.shadow.text-center.border-0
                         i.fa-solid.fa-file-medical.fa-4x.text-warning.mt-4
                         .card-body
                             h5.card-title.text-warning Evoluciones y Estudios
+            .col-md-3.mb-4
+                a(href="#", class="text-decoration-none h-100", data-bs-toggle="modal", data-bs-target="#modalConfirmarAlta")
+                    .card.h-100.shadow.text-center.border-0.bg-light
+                        i.fa-solid.fa-house-medical-circle-check.fa-4x.text-secondary.mt-4
+                        .card-body
+                            h5.card-title.text-secondary Dar de Alta
+
+include modal_alta.pug

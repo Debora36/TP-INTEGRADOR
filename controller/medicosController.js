@@ -1,5 +1,5 @@
 const { sequelize, Medico, Enfermero, EvolucionMedica, EstudioDiagnostico, Tratamiento, TratamientoMedicacion, Internacion, Paciente, Obra_Social, Turno,
-    Medicacion, EvolucionSignosVitales, AdministracionMedicacion, CatalogoAlergias, CatalogoPatologias, PacienteAntecedentesFamiliares, Plan, PacienteMedicacionHabitual, PacienteCirugias} = require('../modelo'); // Asegúrate de que la ruta a 'modelo' sea correcta
+    Medicacion, EvolucionSignosVitales, AdministracionMedicacion, CatalogoAlergias, CatalogoPatologias, PacienteAntecedentesFamiliares, Plan, PacienteMedicacionHabitual, PacienteCirugias, Cama} = require('../modelo'); // Asegúrate de que la ruta a 'modelo' sea correcta
 const { Op } = require('sequelize');
 
 
@@ -408,5 +408,35 @@ exports.actualizarHistoria = async (req, res) => {
             : '/medicos/buscar';
             
         res.redirect(`${rutaRedireccion}?errores=Error interno al guardar los datos`);
+    }
+};
+
+exports.procesarAlta = async (req, res) => {
+    const { id_internacion } = req.body;
+    try {
+        const internacion = await Internacion.findByPk(id_internacion);
+        
+        if (!internacion) {
+            return res.status(404).send('Error: Internación no encontrada');
+        }
+
+        //asigno la fecha de alta
+        internacion.FechaAlta = new Date();
+        await internacion.save();
+
+        //libero la cama
+        if (internacion.ID_Cama) {
+            const cama = await Cama.findByPk(internacion.ID_Cama);
+            if (cama) {
+                cama.disponible = 1;
+                await cama.save();
+            }
+        }
+
+        res.redirect('/medicos/buscar');
+
+    } catch (error) {
+        console.error('Error al procesar el alta médica:', error);
+        res.status(500).send('Hubo un error al procesar el alta del paciente.');
     }
 };

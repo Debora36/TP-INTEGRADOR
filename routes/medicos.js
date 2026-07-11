@@ -14,5 +14,6 @@ router.get('/medicacion-administrada/:id', medicosController.verMedicacionAdmini
 router.get('/historial/:id', medicosController.verHistoriaGeneral);
 router.post('/actualizarHistoria', medicosController.actualizarHistoria);
 router.post('/cambiar-estado-tratamiento/:id', medicosController.cambiarEstadoTratamiento);
+router.post('/procesar-alta', medicosController.procesarAlta);
 
 module.exports = router;
