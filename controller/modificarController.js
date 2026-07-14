@@ -1,5 +1,4 @@
-const { Internacion, Paciente, Cama, Habitacion, AlaHospital } = require('../modelo');
-
+const { Internacion, Paciente, Cama, Habitacion, AlaHospital, EvaluacionIngreso, EvolucionMedica, EvolucionSignosVitales, AdministracionMedicacion } = require('../modelo');
 exports.buscarInternaciones = async (req, res) => {
   const { dni } = req.body;
 
@@ -85,11 +84,35 @@ exports.editarInternacion = async (req, res) => {
 
 exports.eliminarInternacion = async (req, res) => {
   const { id } = req.params;
+  const confirmar = req.query.confirmar === 'true';
   try {
     const internacion = await Internacion.findOne({ where: { ID: id } });
     
     if (!internacion) {
       return res.status(404).send('Internación no encontrada');
+    }
+
+    // Antes de borrar, ver si quedaría algo huérfano
+    const [evaluaciones, evoluciones, signosVitales, administraciones] = await Promise.all([
+      EvaluacionIngreso.count({ where: { ID_Internacion: id } }),
+      EvolucionMedica.count({ where: { ID_Internacion: id } }),
+      EvolucionSignosVitales.count({ where: { ID_Internacion: id } }),
+      AdministracionMedicacion.count({ where: { ID_Internacion: id } })
+    ]);
+
+    const tieneRegistrosClinicos = evaluaciones > 0 || evoluciones > 0 || signosVitales > 0 || administraciones > 0;
+    
+     // Si hay registros clínicos asociados y todavía no se confirmó, avisar y frenar
+    if (tieneRegistrosClinicos && !confirmar) {
+      return res.status(409).json({
+        requiereConfirmacion: true,
+        detalle: {
+          evaluacionesIngreso: evaluaciones,
+          evolucionesMedicas: evoluciones,
+          signosVitales: signosVitales,
+          administracionesMedicacion: administraciones
+        }
+      });
     }
 
     // Liberar la cama asociada

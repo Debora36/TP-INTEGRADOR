@@ -118,19 +118,48 @@ html(lang="en")
             });
 
             document.querySelectorAll('.eliminar').forEach(boton => {
-                boton.addEventListener('click', () => {
+                boton.addEventListener('click', async () => {
                     if (!confirm('¿Estás seguro que querés eliminar esta internación?')) return;
 
                     const fila = boton.closest('tr');
-                    fetch(`/modificar/internacion/${fila.dataset.id}/eliminar`, {
-                        method: 'POST'
-                    }).then(res => {
+                    const idInternacion = fila.dataset.id;
+
+                    try {
+                        let res = await fetch(`/modificar/internacion/${idInternacion}/eliminar`, {
+                            method: 'POST'
+                        });
+
+                        // Si la internación ya tiene registros clínicos cargados, el server
+                        // frena y nos manda el detalle para volver a confirmar con esa info.
+                        if (res.status === 409) {
+                            const data = await res.json();
+                            const d = data.detalle;
+                            const partes = [];
+                            if (d.evaluacionesIngreso) partes.push(`${d.evaluacionesIngreso} evaluación/es de ingreso`);
+                            if (d.evolucionesMedicas) partes.push(`${d.evolucionesMedicas} evolución/es médica/s`);
+                            if (d.signosVitales) partes.push(`${d.signosVitales} registro/s de signos vitales`);
+                            if (d.administracionesMedicacion) partes.push(`${d.administracionesMedicacion} administración/es de medicación`);
+
+                            const mensaje = `Esta internación ya tiene ${partes.join(', ')} cargados.\n\n` +
+                                `Esos registros NO se van a borrar, pero van a quedar sin vincular a ninguna internación.\n\n` +
+                                `¿Confirmás que querés eliminarla igual?`;
+
+                            if (!confirm(mensaje)) return;
+
+                            res = await fetch(`/modificar/internacion/${idInternacion}/eliminar?confirmar=true`, {
+                                method: 'POST'
+                            });
+                        }
+
                         if (res.ok) {
                             fila.remove();
                             alert('Internación eliminada');
                         } else {
                             alert('Error al eliminar');
                         }
-                    });
+                    } catch (error) {
+                        console.error('Error al eliminar internación:', error);
+                        alert('Error al eliminar');
+                    }
                 });
             });
