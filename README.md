@@ -1,6 +1,6 @@
 # 🏥 Sistema de Información Hospitalario
 
-Un sistema integral para optimizar la administración de pacientes, internaciones, habitaciones y camas en entornos hospitalarios.
+Sistema web para la gestión integral de un hospital: admisión e internación de pacientes, asignación de habitaciones y camas, historia clínica, turnos y el circuito completo de atención de Médicos y Enfermería. Desarrollado como Trabajo Práctico Integrador de Programación Web 2 
 
 ## 📋 Tabla de Contenidos
 - [Características](#-características)
@@ -15,10 +15,37 @@ Un sistema integral para optimizar la administración de pacientes, internacione
 
 Este Sistema de Gestión Hospitalaria ofrece las siguientes funcionalidades clave:
 
-* **Recepción de Pacientes:** Registro de nuevo paciente, consulta, actualización de información, eliminación del registro y asociación de un paciente con una internación de urgencias.
-* **Admisiones de pacientes:** Registro de las internaciones de un paciente, modificación de datos y eliminación de la admisión.
-* **Gestión de Habitaciones y Camas:** Control de la disponibilidad de habitaciones y camas, asignación a pacientes y admisión de paciente de urgencia con datos ficticios.
-* **Autenticación de Usuarios:** Sistema de login con roles diferenciados (Médico, Enfermero, Recepcionista).Por el momento, sólo funciona Recepcionista.
+* Recepcionista
+- Alta, búsqueda, edición y baja de pacientes (por DNI)
+- Asociar un paciente "NN" (ingresado sin identificar) con su identidad real una vez confirmada
+- Admisión de pacientes: programada y por urgencia
+- Búsqueda y asignación de habitaciones/camas disponibles (filtrando por ala, tipo de habitación y género)
+- Modificación y baja de internaciones activas
+- Gestión de turnos médicos
+
+* Médico
+- Búsqueda de pacientes por dni
+- Carga de evoluciones médicas
+- Solicitud y carga de resultados de estudios diagnósticos
+- Indicación de tratamientos y medicación
+- Consulta de signos vitales y medicación administrada por enfermería
+- Historia clínica general del paciente (antecedentes, alergias, enfermedades preexistentes, cirugías, medicación habitual)
+- Alta médica del paciente
+
+* Enfermería
+- Búsqueda de pacientes por cama/habitación
+- Evaluación de ingreso
+- Registro y seguimiento de signos vitales
+- Administración de medicación indicada por el médico
+- Consulta de historia clínica
+
+## Seguridad implementada
+
+- Contraseñas de usuario hasheadas con **bcrypt** (nunca se guardan ni se comparan en texto plano)
+- Autenticación por sesión (`express-session`) con secreto cargado desde variable de entorno
+- Autorización por rol: cada grupo de rutas exige sesión iniciada y rol correspondiente (`verificarSesion` + `verificarRol`, en `middleware/auth.js`)
+- Credenciales de base de datos y secreto de sesión fuera del repositorio, vía `.env` (no versionado)
+
 
 ## Instalación
 
@@ -67,19 +94,22 @@ Asegúrate de tener instalado lo siguiente:
 Una vez que la aplicación esté en funcionamiento:
 
 1.  Abre tu navegador web y visita `http://localhost:3000`..
-2.  **Inicio de Sesión:** Inicia sesión en rol recepcionista con:
+2.  **Inicio de Sesión como rececpcionista:**:
     * Usuario: Maria123
     * Contraseña: 1234
-3.  **Recepcionista:** Una vez autenticado, serás redirigido al panel de inicio (`/recepcionista`) donde podras navegar por las diferentes secciones.
+    * Rol: Recepcionista
 
-## Uso en línea
+    **Inicio de Sesión como enfermero/a:**:
+    * Usuario: Susana
+    * Contraseña: 1111
+    * Rol: Enfermero
 
-Se puede acceder a la app desplegada en Railway
-1. Dirigete al enlace: https://tp-integrador-production.up.railway.app/
-2. Ingresar al sistema con las siguientes credenciales de prueba:
-    * Usuario: Maria123
-    * Contraseña: 1234
-    * Rol: recepcionista
+    **Inicio de Sesión como medico/a:**:
+    * Usuario: Carlos
+    * Contraseña: 2222
+    * Rol: Médico
+
+3.  Una vez autenticado, serás redirigido al panel de inicio correspondiente donde podras navegar por las diferentes secciones.
 
 
 ## Tecnologías Usadas
@@ -91,6 +121,8 @@ Este proyecto ha sido construido utilizando las siguientes tecnologías:
     * [Express.js]
     * [MySQL2]
     * [Express-session](Gestión de sesiones)
+    * [bcrypt]
+    * [dotenv] (variables de entorno)
 * **Frontend:**
     * [Pug](Motor de plantillas HTML)
     * CSS Vanilla
@@ -120,11 +152,18 @@ Este proyecto ha sido construido utilizando las siguientes tecnologías:
 | Método | Ruta                       | Descripción                                 |
 | ------ | -------------------------- | ------------------------------------------- |
 | GET    | `/modelo/paciente/:dni`    | Busca un paciente por DNI                   |
-| POST   | `/paciente/actualizar/:id` | Actualiza los datos del paciente            |
+| POST   | `/paciente/editar/:id`     | Actualiza los datos del paciente            |
 | POST   | `/paciente/eliminar/:id`   | Elimina al paciente por ID                  |
 | POST   | `/paciente/asociarPaciente`| Asocia un paciente real con uno de urgencia |
 
-* Habitaciones e internaciones
+* Registro de pacientes
+
+| Método | Ruta                     | Descripción                       |
+|--------|--------------------------|
+| GET    | `/registro`              | Formulario de alta de paciente    |
+| POST   | `/registro/nuevopaciente`| Crea un paciente nuevo            |
+
+* Habitaciones
 
 | Método | Ruta                               | Descripción                                                  |
 | ------ | ---------------------------------- | ------------------------------------------------------------ |
@@ -140,12 +179,13 @@ Este proyecto ha sido construido utilizando las siguientes tecnologías:
 | GET    | `/admision/editar`       | Muestra la internacion del paciente        |
 | POST   | `/admision/urgencia`     | Registra un paciente de urgencia (NN)      |
 
-* Modificar o eliminar admisiones
+* Modificar o eliminar internaciones
 
 | Método | Ruta               | Descripción                                      |
 | ------ | ------------------ | -------------------------------------------------|
 | GET    | `/modificar`       | Muestra form para buscar internaciones por dni   |
 | GET    | `/modificar/buscar`| Lista las admisiones de un paciente              |
+| POST   | `/modificar/internacion/:id/editar` | Edita una internación           |
 | POST   | `/modificar/internacion/:id/eliminar`| Elimina una internacion por id |
 
 
@@ -153,9 +193,48 @@ Este proyecto ha sido construido utilizando las siguientes tecnologías:
 
 | Método | Ruta                  | Descripción                  |
 | ------ | --------------------- | -----------------------------|
+| GET    | `/turnos/formulario`  | Form de asignación de turno  |
 | GET    | `/turnos/buscar/:dni` | Muestra turno más reciente   |
 | POST   | `/turnos/crear`       | Crea un nuevo turno          |
 | POST   | `/turnos/eliminar/:id`| Elimina un turno por ID      |
+| POST   | `/turnos/presente/:id`| Marca un turno como presente |
+
+* Catálogo planes
+| Método | Ruta                  | Descripción                                   |
+|--------|-----------------------|-----------------------------------------------|
+| GET    | `/api/planes/:obraId` | Devuelve los planes de una obra social (JSON) |
+
+* Médico
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/medicos` | Panel principal del médico |
+| GET | `/medicos/buscar` | Busca pacientes internados |
+| POST | `/medicos/guardarEvolucion` | Registra una evolución médica |
+| POST | `/medicos/cargarResultadoEstudio` | Carga el resultado de un estudio diagnóstico |
+| GET | `/medicos/signos-vitales/:id` | Consulta los signos vitales de una internación |
+| GET | `/medicos/medicacion-administrada/:id` | Consulta la medicación administrada |
+| GET | `/medicos/historial/:id` | Historia clínica general del paciente |
+| POST | `/medicos/actualizarHistoria` | Actualiza antecedentes, alergias, etc. |
+| POST | `/medicos/cambiar-estado-tratamiento/:id` | Cambia el estado de un tratamiento |
+| POST | `/medicos/procesar-alta` | Procesa el alta médica del paciente |
+
+* Enfermería
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/enfermeria` | Redirige a `/enfermeria/buscar` |
+| GET | `/enfermeria/buscar` | Busca pacientes por cama/habitación |
+| GET | `/enfermeria/historia/:idInternacion` | Consulta la historia clínica |
+| POST | `/enfermeria/historia/actualizar` | Actualiza la historia clínica |
+| GET | `/enfermeria/evaluacion/:idInternacion` | Formulario de evaluación de ingreso |
+| POST | `/enfermeria/guardarEvaluacion` | Guarda la evaluación de ingreso |
+| GET | `/enfermeria/signos/:idInternacion` | Formulario de carga de signos vitales |
+| POST | `/enfermeria/guardarSignos` | Guarda signos vitales |
+| POST | `/enfermeria/signos/eliminar/:id` | Elimina un registro de signos vitales |
+| GET | `/enfermeria/administrar/:idInternacion` | Formulario de administración de medicación |
+| POST | `/enfermeria/guardarAdministracion` | Registra la administración de medicación |
+| POST | `/enfermeria/administrar/eliminar/:id` | Elimina un registro de administración |
 
 
 ⚠️ Nota: Muchos de estos endpoints están diseñados para ser consumidos por formularios o funciones AJAX dentro de la aplicación. No son accesibles directamente desde el navegador sin pasar por el flujo correcto ni sin una sesión activa.
@@ -176,6 +255,27 @@ Solución: Se incluyeron en la URL como parámetros ?dni=...&fecha=... y se most
 
 5. Problema: La asociación entre paciente de urgencia (NN) y paciente real no actualizaba la internación correctamente.
 Solución: Se creó un controlador asociarPaciente que reemplaza el ID del paciente NN en la internación y luego elimina al paciente ficticio.
+
+6. Problema: La mayoría de las rutas eran accesibles sin haber iniciado sesión, y un usuario logueado con cualquier rol podía acceder a las secciones de los demás roles.
+Solución: Se creó un middleware reutilizable (verificarSesion y verificarRol) aplicado a cada grupo de rutas según el rol correspondiente.
+
+7. Problema: Exposición accidental de credenciales de la base de datos al trackear y subir el archivo .env al repositorio público de GitHub.
+Solución: Se invalidó la contraseña comprometida cambiándola directamente en el motor de base de datos (MySQL). Luego, se agregó el archivo al .gitignore y se utilizó la opción "Stop tracking" en GitHub Desktop para eliminarlo del repositorio público de forma segura sin afectar el entorno local.
+
+8. Problema: El sistema arrojaba el error Cannot read properties of null (reading 'paciente') al intentar cargar el modal de "Alta Médica", ya que Pug intentaba renderizar variables de una internación antes de que el médico buscara a un paciente.
+Solución: Se implementó un renderizado condicional en la vista (if internacion && internacion.paciente) para construir el modal solo cuando los datos existen. Además, el código del modal se aisló en un archivo parcial (include) para reutilizarlo en múltiples vistas sin duplicar código.
+
+8. Problema: Editar una internación existente reutilizando el flujo de admisión no liberaba correctamente la cama anterior.
+Solución: Se agregó una rama modoEdicion dentro de asignarHabitacion que marca la cama anterior como disponible antes de asignar la nueva.
+
+10. Problema: Inconsistencia de datos en la base de datos al realizar operaciones encadenadas. Por ejemplo, al registrar una nueva internación, si el sistema lograba guardar la internación pero fallaba justo antes de cambiar el estado de la cama a "ocupada", la base de datos quedaba corrupta (paciente internado en una cama que figuraba libre).
+Solución: Se implementaron Transacciones de Sequelize en los controladores que afectan a múltiples tablas simultáneamente. Esto garantiza la atomicidad de las operaciones: si alguna consulta falla en el medio del proceso, se ejecuta un rollback (se deshace todo para no dejar registros huérfanos), y solo se hace un commit (guardado definitivo) si todas las operaciones del bloque finalizan con éxito.
+
+11. Problema: Necesidad de cargar múltiples registros simultáneos en un único formulario de historia clínica sin recargar la página, garantizando que el servidor (Node.js) reciba los datos correctamente estructurados.
+Solución: Se implementó un script de manipulación dinámica del DOM (Frontend JavaScript). Este script captura las selecciones del usuario (validando los data-id ocultos en los datalist), dibuja nuevas filas en una tabla para darle feedback visual al médico, e inyecta etiquetas <input type="hidden"> por cada registro. Al estructurar el atributo name con índices incrementales (ej: name="medicamentos[1000][id]"), se logró que el formulario envíe un array de objetos perfecto, permitiendo que el controlador procese todas las inserciones en bloque de forma eficiente.
+
+12. Problema: La pantalla de administración de medicación de enfermería mostraba los tratamientos de todos los pacientes, sin filtrar por internación ni por estado.
+Solución: Se agregó el campo estado al modelo Tratamiento (con valor por defecto 'Activo') y se filtró la consulta por las evoluciones médicas de la internación puntual.
 
 
 ---
