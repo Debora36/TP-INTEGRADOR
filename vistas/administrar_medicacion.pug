@@ -113,19 +113,19 @@ html(lang="es")
                         .card-body
                             form#formAdministrar(action="/enfermeria/guardarAdministracion" method="POST")
                                 input(type="hidden" name="internacion_id" value=internacion.ID)
-
+                                input(type="hidden" name="id_administracion" value=id_administracion || '')
 
                                 .mb-3
                                     label.form-label <strong>Motivo / Tipo</strong>
                                     .d-flex.gap-3.mt-1
                                         .form-check
-                                            input.form-check-input(type="radio" name="tipo_administracion" id="tipo1" value="Prescripto" required)
+                                            input.form-check-input(type="radio" name="tipo_administracion" id="tipo1" value="Prescripto" required checked=(tipo_administracion === 'Prescripto' || !id_administracion))
                                             label.form-check-label(for="tipo1") Prescripto
                                         .form-check
-                                            input.form-check-input(type="radio" name="tipo_administracion" id="tipo2" value="Habitual")
+                                            input.form-check-input(type="radio" name="tipo_administracion" id="tipo2" value="Habitual" checked=(tipo_administracion === 'Habitual'))
                                             label.form-check-label(for="tipo2") Habitual
                                         .form-check
-                                            input.form-check-input(type="radio" name="tipo_administracion" id="tipo3" value="Alivio del Dolor")
+                                            input.form-check-input(type="radio" name="tipo_administracion" id="tipo3" value="Alivio del Dolor" checked=(tipo_administracion === 'Alivio del Dolor'))
                                             label.form-check-label(for="tipo3") Alivio del Dolor
 
                                 .mb-3
@@ -134,19 +134,18 @@ html(lang="es")
                                             option(value="" disabled selected) Seleccione un medicamento...
                                             if catalogoMedicamentos
                                                 each med in catalogoMedicamentos
-                                                    option(value=med.id) #{med.nombre} - #{med.presentacion}
-
+                                                    option(value=med.id selected=(String(med.id) === String(ID_Medicacion))) #{med.nombre} - #{med.presentacion}
                                 .mb-3
                                     label.form-label Dosis Aplicada
-                                    input.form-control(type="text" name="dosis_aplicada" placeholder="Ej: 1 ampolla, 500mg" required)
+                                    input.form-control(type="text" name="dosis_aplicada" value=(dosis_aplicada || '') placeholder="Ej: 1 ampolla, 500mg" required)
 
                                 .mb-3
                                     label.form-label Notas / Observaciones
-                                    textarea.form-control(name="notas" rows="3" placeholder="Respuesta del paciente, justificación de analgesia..." required)
+                                    textarea.form-control(name="notas" rows="3" placeholder="Respuesta del paciente, justificación de analgesia..." required)= notas || ''
 
                                 button.btn.btn-success.w-100.mt-3(type="submit") 
                                     i.fas.fa-save.me-2 
-                                    | Guardar Registro
+                                    | #{id_administracion ? 'Actualizar Registro' : 'Guardar Registro'}
 
             //HISTORIAL
             .row.justify-content-center.mb-5
@@ -178,7 +177,9 @@ html(lang="es")
                                                     td #{registro.medicamento_libre ? registro.medicamento_libre.nombre : 'No especificado'}
                                                     td= registro.dosis_aplicada
                                                     td.small.text-muted= registro.notas
-                                                    td
+                                                    td.d-flex.gap-2
+                                                        a.btn.btn-warning.btn-sm(href=`/enfermeria/administrar/${internacion.ID}?edit=${registro.id}`)
+                                                            i.fas.fa-pencil-alt
                                                         form(action=`/enfermeria/administrar/eliminar/${registro.id}` method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este registro de administración de medicación?')")
                                                             //- Pasamos el id de internación para saber a dónde redirigir después
                                                             input(type="hidden" name="internacion_id" value=internacion.ID)

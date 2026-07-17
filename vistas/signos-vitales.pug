@@ -55,6 +55,7 @@ html(lang="en")
                 
                 //FORMULARIO PRINCIPAL
                 form#formGuardarSignos(action="/enfermeria/guardarSignos" method="POST")
+                    input(type="hidden" name="id_signos" value=id_signos || '')
                     input(type="hidden" name="internacion_id" value=internacion.ID)
                     //TARJETA DE SIGNOS VITALES
                     .row.justify-content-center
@@ -71,16 +72,16 @@ html(lang="en")
                                                 input.form-control(type="text" name="presion_arterial" value=presion_arterial || '' placeholder="Ej: 120/80" required)
                                             .mb-3
                                                 label.form-label Frecuencia Cardíaca (lpm)
-                                                input.form-control(type="text" name="frecuencia_cardiaca" value=frecuencia_cardiaca || '' placeholder="Ej: 80" required)
+                                                input.form-control(type="number" name="frecuencia_cardiaca" step="1" min="0" value=frecuencia_cardiaca || '' placeholder="Ej: 80" required)
                                             .mb-3
                                                 label.form-label Frecuencia Respiratoria (rpm)
-                                                input.form-control(type="text" name="frecuencia_respiratoria" value=frecuencia_respiratoria || '' placeholder="Ej: 16")
+                                                input.form-control(type="number" name="frecuencia_respiratoria" step="1" min="0" value=frecuencia_respiratoria || '' placeholder="Ej: 16")
                                         
                                         //segunda columnaa
                                         .col-md-6
                                             .mb-3
                                                 label.form-label Temperatura (°C)
-                                                input.form-control(type="text" name="temperatura" value=temperatura || '' placeholder="Ej: 36.5" required)
+                                                input.form-control(type="number" name="temperatura" step="0.1" min="0" value=temperatura || '' placeholder="Ej: 36.5" required)
                                             .mb-3
                                                 label.form-label Color de Piel
                                                 select.form-select(name="color_piel")
@@ -129,7 +130,9 @@ html(lang="en")
                                                         td= signo.frecuencia_respiratoria || '-'
                                                         td= signo.temperatura || '-'
                                                         td.small.text-muted= signo.observaciones || '-'
-                                                        td
+                                                        td.d-flex.gap-2
+                                                            a.btn.btn-warning.btn-sm(href=`/enfermeria/signos/${internacion.ID}?edit=${signo.id}`)
+                                                                i.fas.fa-pencil-alt
                                                             form(action=`/enfermeria/signos/eliminar/${signo.id}` method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este registro de signos vitales?')")
                                                                 //- Pasamos el id de internación para saber a dónde redirigir después
                                                                 input(type="hidden" name="internacion_id" value=internacion.ID)
@@ -148,7 +151,7 @@ html(lang="en")
                         a.btn.btn-outline-secondary(href="/enfermeria") 
                             <i class="fas fa-arrow-left"></i>
                         button.btn.btn-success.btn-lg(type="submit" form="formGuardarSignos")
-                            | #{id ? 'Actualizar' : 'Guardar'}
+                            | #{id_signos ? 'Actualizar' : 'Guardar'}
 
 
                 //BOTONES DE ACCIÓN

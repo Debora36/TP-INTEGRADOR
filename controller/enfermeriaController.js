@@ -360,7 +360,7 @@ exports.guardarEvaluacionInicial = async (req, res) => {
 //GET mostrar formulario de signos vitales
 exports.mostrarFormularioSignos = async (req, res) => {
     const {idInternacion} = req.params;
-    const { mensaje, errores } = req.query;
+    const { mensaje, errores, edit} = req.query;
     try {
         //Busco la internación y los datos del paciente
         const internacion = await Internacion.findByPk(idInternacion, {
@@ -383,6 +383,23 @@ exports.mostrarFormularioSignos = async (req, res) => {
             order: [['fecha_hora', 'DESC']] //Los más recientes primero
         });
 
+        let datosEdicion = {};
+        if (edit) {
+            const signoAEditar = await SignosVitales.findByPk(edit);
+            if (signoAEditar) {
+                datosEdicion = signoAEditar.toJSON();
+                
+                //Separo la cadena de observaciones para que los <select> de la vista se marquen solos
+                if (datosEdicion.observaciones) {
+                    const partes = datosEdicion.observaciones.split(' | ');
+                    if (partes.length === 2) {
+                        // Limpiamos los textos para quedarnos solo con el valor exacto
+                        datosEdicion.color_piel = partes[0].replace('Piel: ', '').trim();
+                        datosEdicion.respuesta_estimulos = partes[1].replace('Estímulos: ', '').trim();
+                    }
+                }
+            }
+        }
 
         //Renderizo la vista con los signos, si no hay le paso un array vacio
         res.render('signos-vitales', { 
@@ -390,7 +407,16 @@ exports.mostrarFormularioSignos = async (req, res) => {
             paciente: internacion.paciente,
             historialSignos: historialSignos || [] ,
             mensaje: mensaje || null,
-            errores: errores || null
+            errores: errores ? [errores] : null,
+
+            // Variables para rellenar el formulario
+            id_signos: datosEdicion.id || '',
+            presion_arterial: datosEdicion.presion_arterial || '',
+            frecuencia_cardiaca: datosEdicion.frecuencia_cardiaca || '',
+            frecuencia_respiratoria: datosEdicion.frecuencia_respiratoria || '',
+            temperatura: datosEdicion.temperatura || '',
+            color_piel: datosEdicion.color_piel || '',
+            respuesta_estimulos: datosEdicion.respuesta_estimulos || ''
         });
 
     } catch (error) {
@@ -417,7 +443,16 @@ exports.guardarSignos = async (req, res) => {
         if (!req.session.usuario) {
             return res.status(401).send("Debes iniciar sesión.");
         }
-        
+        // Validación
+        if (!/^\d+$/.test(frecuencia_cardiaca)) {
+            return res.redirect(`/enfermeria/signos/${internacion_id}?errores=La frecuencia cardíaca debe ser un número entero.`);
+        }
+        if (frecuencia_respiratoria && !/^\d+$/.test(frecuencia_respiratoria)) {
+            return res.redirect(`/enfermeria/signos/${internacion_id}?errores=La frecuencia respiratoria debe ser un número entero.`);
+        }
+        if (!/^\d+(\.\d+)?$/.test(temperatura)) {
+            return res.redirect(`/enfermeria/signos/${internacion_id}?errores=La temperatura debe ser un número válido.`);
+}
         const idUsuarioLogueado = req.session.usuario.id_usuario;
 
         //Busco el ID_Enfermero asociado a este usuario
@@ -478,7 +513,7 @@ exports.eliminarSignos = async (req, res) => {
 // Mostrar formulario medicacion
 exports.mostrarAdministracion = async (req, res) => {
     const { idInternacion } = req.params;
-    const { mensaje, errores } = req.query;
+    const { mensaje, errores, edit} = req.query;
 
     try {
 
@@ -537,6 +572,12 @@ exports.mostrarAdministracion = async (req, res) => {
             order: [['Fecha_Hora', 'DESC']]
         });
 
+        // LÓGICA DE EDICIÓN
+        let datosEdicion = {};
+        if (edit) {
+            const registroAEditar = await AdministracionMedicacion.findByPk(edit);
+            if (registroAEditar) datosEdicion = registroAEditar.toJSON();
+        }
 
         res.render('administrar_medicacion', {
             internacion,
@@ -546,7 +587,14 @@ exports.mostrarAdministracion = async (req, res) => {
             catalogoMedicamentos,
             historial,
             mensaje: mensaje || null,
-            errores: errores || null
+            errores: errores ? [errores] : null,
+            
+            // Variables para rellenar el formulario
+            id_administracion: datosEdicion.id || '',
+            tipo_administracion: datosEdicion.tipo_administracion || '',
+            ID_Medicacion: datosEdicion.ID_Medicacion || '',
+            dosis_aplicada: datosEdicion.dosis_aplicada || '',
+            notas: datosEdicion.notas || ''
         });
 
     } catch (error) {
@@ -560,6 +608,7 @@ exports.mostrarAdministracion = async (req, res) => {
 exports.guardarAdministracion = async (req, res) => {
 
     const { 
+        id_administracion,
         internacion_id, 
         tipo_administracion, 
         ID_Medicacion, 
@@ -575,8 +624,7 @@ exports.guardarAdministracion = async (req, res) => {
             return res.redirect(`/enfermeria/administrar/${internacion_id}?errores=Tu usuario no es un enfermero válido.`);
         }
 
-
-        await AdministracionMedicacion.create({
+        const datosParaBD = {
             ID_Internacion: internacion_id,
             id_enfermero: enfermeroActual.id,
             ID_Medicacion: ID_Medicacion,
@@ -584,9 +632,18 @@ exports.guardarAdministracion = async (req, res) => {
             dosis_aplicada: dosis_aplicada,
             notas: notas,
             fecha_hora: new Date()
-        });
+        };
 
-        res.redirect(`/enfermeria/administrar/${internacion_id}?mensaje=Medicación registrada con éxito`);
+        // ACTUALIZAR O CREAR
+        if (id_administracion && id_administracion !== '') {
+            delete datosParaBD.fecha_hora; //mantengo la fecha
+            await AdministracionMedicacion.update(datosParaBD, { where: { id: id_administracion } });
+            return res.redirect(`/enfermeria/administrar/${internacion_id}?mensaje=Registro actualizado con éxito`);
+        } else {
+            await AdministracionMedicacion.create(datosParaBD);
+        }
+        return res.redirect(`/enfermeria/administrar/${internacion_id}?mensaje=Medicación registrada con éxito`);
+
 
     } catch (error) {
         console.error('Error al guardar la administración:', error);
