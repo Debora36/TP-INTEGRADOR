@@ -64,7 +64,13 @@ html(lang="es")
                 form(action="/medicos/buscar" method="GET").d-flex.justify-content-center.gap-2
                     input.form-control.w-50(type="number" name="numeroDNI" placeholder="Ingrese número de DNI" required)
                     button.btn.btn-primary(type="submit") Buscar
-
+        if errores && errores.length > 0
+            .alert.alert-danger.alert-dismissible.fade.show.mb-4(role="alert")
+                strong ¡Por favor, verificá lo siguiente!
+                ul.mb-0.mt-2
+                    each error in errores
+                        li= error
+                button.btn-close(type="button" data-bs-dismiss="alert" aria-label="Cerrar")
         //Se muestra la información del paciente si se encuentra
         if paciente
             .card.border-0.shadow-sm.mb-4
@@ -142,33 +148,38 @@ html(lang="es")
                                 .card-body.p-2
                                     if tratamientos && tratamientos.length > 0
                                         each trat in tratamientos
-                                            .border.rounded.p-2.mb-2.bg-white
+                                            .border.rounded.p-2.mb-2.bg-white(id=`tratamiento-${trat.id}`)
                                                 .d-flex.justify-content-between.align-items-center.mb-1
                                                     div
                                                         span.badge.bg-secondary.me-2= trat.tipo_tratamiento
                                                         if trat.estado === 'Suspendido'
-                                                            span.badge.bg-danger Suspendido
+                                                            span.badge.bg-danger(id=`badge-estado-${trat.id}`) Suspendido
                                                         else if trat.estado === 'Finalizado'
                                                             span.badge.bg-dark Finalizado
                                                         else
-                                                            span.badge.bg-success Activo
+                                                            span.badge.bg-success(id=`badge-estado-${trat.id}`) Activo
                                                     
                                                     //Botones de acciones solo si el tratamiento esta activo
-                                                    if trat.estado === 'Activo' || !trat.estado
-                                                        .d-flex.gap-1
-                                                            //Finalizar tratamiento
-                                                            form(action=`/medicos/cambiar-estado-tratamiento/${trat.id}` method="POST" onsubmit="return confirm('¿Marcar tratamiento como Finalizado?');")
-                                                                input(type="hidden" name="dniPaciente" value=paciente.DNI)
-                                                                input(type="hidden" name="nuevoEstado" value="Finalizado")
-                                                                button.btn.btn-sm.btn-outline-dark.border-0(type="submit" title="Finalizar Tratamiento")
-                                                                    i.fas.fa-check-double
+                                                    .d-flex.gap-1(id=`acciones-${trat.id}` style=(trat.estado === 'Activo' || !trat.estado) ? '' : 'display:none;')
+                                                        //Finalizar tratamiento
+                                                        button.btn.btn-sm.btn-outline-dark.border-0.btn-cambiar-estado(
+                                                            type="button"
+                                                            title="Finalizar Tratamiento"
+                                                            data-id=trat.id
+                                                            data-dni=paciente.DNI
+                                                            data-nuevo-estado="Finalizado"
+                                                        )
+                                                            i.fas.fa-check-double
                                                             
-                                                            //Suspender tratamiento
-                                                            form(action=`/medicos/cambiar-estado-tratamiento/${trat.id}` method="POST" onsubmit="return confirm('¿Suspender este tratamiento?');")
-                                                                input(type="hidden" name="dniPaciente" value=paciente.DNI)
-                                                                input(type="hidden" name="nuevoEstado" value="Suspendido")
-                                                                button.btn.btn-sm.btn-outline-danger.border-0(type="submit" title="Suspender Tratamiento")
-                                                                    i.fas.fa-ban
+                                                        //Suspender tratamiento
+                                                        button.btn.btn-sm.btn-outline-danger.border-0.btn-cambiar-estado(
+                                                            type="button"
+                                                            title="Suspender Tratamiento"
+                                                            data-id=trat.id
+                                                            data-dni=paciente.DNI
+                                                            data-nuevo-estado="Suspendido"
+                                                        )
+                                                            i.fas.fa-ban
 
                                                 p.mb-1.small.text-dark <strong>Detalle:</strong> #{trat.descripcion}
                                                 if trat.duracion
@@ -489,4 +500,42 @@ block scripts
                 document.getElementById(idTextoVacio).style.display = 'block';
             }
         }
+
+        //Cambiar estado de un tratamiento (Finalizar / Suspender) sin recargar la página
+        document.querySelectorAll('.btn-cambiar-estado').forEach(boton => {
+            boton.addEventListener('click', async () => {
+                const nuevoEstado = boton.dataset.nuevoEstado;
+                const idTratamiento = boton.dataset.id;
+                const dniPaciente = boton.dataset.dni;
+
+                const mensajeConfirm = nuevoEstado === 'Finalizado'
+                    ? '¿Marcar tratamiento como Finalizado?'
+                    : '¿Suspender este tratamiento?';
+
+                if (!confirm(mensajeConfirm)) return;
+
+                try {
+                    const res = await fetch(`/medicos/cambiar-estado-tratamiento/${idTratamiento}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nuevoEstado, dniPaciente })
+                    });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        const badge = document.getElementById(`badge-estado-${idTratamiento}`);
+                        badge.textContent = nuevoEstado;
+                        badge.className = 'badge ' + (nuevoEstado === 'Suspendido' ? 'bg-danger' : 'bg-dark');
+
+                        document.getElementById(`acciones-${idTratamiento}`).style.display = 'none';
+                    } else {
+                        alert(data.mensaje || 'Error al actualizar el tratamiento');
+                    }
+                } catch (error) {
+                    console.error('Error al cambiar el estado del tratamiento:', error);
+                    alert('Error al actualizar el tratamiento');
+                }
+            });
+        });
 

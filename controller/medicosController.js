@@ -177,6 +177,7 @@ exports.guardarEvolucion = async (req, res) => {
             for (const item of arrayTratamientos) {
                 const nuevoTratamiento = await Tratamiento.create({
                     id_evolucion_medica: nuevaEvolucion.id,
+                    id_medico: medicoActual.id,  
                     descripcion: item.descripcion,
                     duracion: item.duracion || null, 
                     tipo_tratamiento: item.tipo 
@@ -278,13 +279,11 @@ exports.cambiarEstadoTratamiento = async (req, res) => {
             { estado: nuevoEstado },
             { where: { id: idTratamiento } }
         );
-
-        res.redirect(`/medicos/buscar?numeroDNI=${dniPaciente}&mensaje=Tratamiento marcado como ${nuevoEstado}`);
+        res.json({ success: true, nuevoEstado });
 
     } catch (error) {
         console.error("Error al cambiar el estado del tratamiento:", error);
-        const dni = req.body.dniPaciente || '';
-        res.redirect(`/medicos/buscar?numeroDNI=${dni}&errores=Error al actualizar el tratamiento`);
+        res.status(500).json({ success: false, mensaje: 'Error al actualizar el tratamiento' });
     }
 };
 
