@@ -16,9 +16,9 @@ exports.buscarInternaciones = async (req, res) => {
       });
     }
     const internaciones = await Internacion.findAll({
-        
+      order: [['FechaIngreso', 'DESC']],  
       where: { ID_Paciente: paciente.id },
-      attributes: ['ID', 'FechaIngreso', 'ID_Cama', 'ID_Habitacion'],
+      attributes: ['ID', 'FechaIngreso', 'ID_Cama', 'ID_Habitacion', 'FechaAlta'],
       include: [
         {
           model: Cama,

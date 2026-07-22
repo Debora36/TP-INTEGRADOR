@@ -80,7 +80,7 @@ exports.crearPaciente = async function(req, res) {
   }
   
 
-  // 🧾 Guardar en base de datos
+  //Guardar en base de datos
   try {
     const objetoPaciente = await Paciente.create({
       Nombre,
@@ -120,6 +120,9 @@ exports.crearPaciente = async function(req, res) {
 
     return res.render('nuevopaciente', {
       errores,
+      nacionalidad: nacionalidades,
+      obra_social: obrasSociales,
+      formData: req.body
     });
   }
 };

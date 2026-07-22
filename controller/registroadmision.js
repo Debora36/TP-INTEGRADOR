@@ -16,10 +16,10 @@ exports.editarDesdeModificar = async (req, res) => {
   try {
     const dni = req.query.dni;
     const fecha = req.query.fecha;
-    if (!dni) return res.status(400).send("DNI no especificado.");
+    if (!dni) return res.redirect('/modificar?mensajeError=DNI no especificado.');
 
     const paciente = await Paciente.findOne({ where: { DNI: dni } });
-    if (!paciente) return res.status(404).send("Paciente no encontrado.");
+    if (!paciente) return res.redirect('/modificar?mensajeError=Paciente no encontrado.');
 
     const internacion = await Internacion.findOne({
       where: { ID_Paciente: paciente.id, FechaIngreso: fecha, FechaAlta: null },
@@ -47,7 +47,7 @@ exports.editarDesdeModificar = async (req, res) => {
       ]
     });
     console.log("Internación encontrada:", internacion?.toJSON?.());
-    if (!internacion) return res.status(404).send("Internación no encontrada.");
+    if (!internacion) return res.redirect('/modificar?mensajeError=Esa internación ya fue dada de alta y no se puede editar.');
 
     const alas = await Ala.findAll();
 
@@ -62,7 +62,7 @@ exports.editarDesdeModificar = async (req, res) => {
     });
   } catch (error) {
     console.error('Error en editarDesdeModificar:', error);
-    res.status(500).send("Error al cargar datos para edición.");
+    res.redirect('/modificar?mensajeError=Error al cargar los datos para editar.');
   }
 };
 exports.crearPacienteUrgencia = async (req, res) => {

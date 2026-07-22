@@ -3,7 +3,7 @@ const pug = require('pug');
 const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
-const mysql = require('mysql2');
+//const mysql = require('mysql2');
 const sequelize = require('./db');
 const { verificarSesion, verificarRol } = require('./middleware/auth');
 
@@ -26,6 +26,9 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+    cookie: {
+    maxAge: 1000 * 60 * 60 * 2 //2 horas
+  }
 }));
 
 app.use((req, res, next) => {

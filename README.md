@@ -1,8 +1,8 @@
-# 🏥 Sistema de Información Hospitalario
+# Sistema de Información Hospitalario
 
 Sistema web para la gestión integral de un hospital: admisión e internación de pacientes, asignación de habitaciones y camas, historia clínica, turnos y el circuito completo de atención de Médicos y Enfermería. Desarrollado como Trabajo Práctico Integrador de Programación Web 2 
 
-## 📋 Tabla de Contenidos
+## Tabla de Contenidos
 - [Características](#-características)
 - [Instalación](#️-instalación)
 - [Uso local](#uso-local)
@@ -159,7 +159,7 @@ Este proyecto ha sido construido utilizando las siguientes tecnologías:
 * Registro de pacientes
 
 | Método | Ruta                     | Descripción                       |
-|--------|--------------------------|
+|--------|--------------------------|-----------------------------------|
 | GET    | `/registro`              | Formulario de alta de paciente    |
 | POST   | `/registro/nuevopaciente`| Crea un paciente nuevo            |
 
@@ -200,6 +200,7 @@ Este proyecto ha sido construido utilizando las siguientes tecnologías:
 | POST   | `/turnos/presente/:id`| Marca un turno como presente |
 
 * Catálogo planes
+
 | Método | Ruta                  | Descripción                                   |
 |--------|-----------------------|-----------------------------------------------|
 | GET    | `/api/planes/:obraId` | Devuelve los planes de una obra social (JSON) |

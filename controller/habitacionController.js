@@ -17,6 +17,7 @@ exports.buscarHabitaciones = async (req, res) => {
               model: Internacion,
               as: 'internacion',
               required: false,
+              where: { FechaAlta: null },
               include: [
                 {
                   model: Paciente,

@@ -538,10 +538,11 @@ exports.mostrarAdministracion = async (req, res) => {
         });
 
         const evoluciones = await EvolucionMedica.findAll({
-            where: { id_internacion: internacion.ID || internacion.id } // Asegurate de usar el ID correcto
+            where: { id_internacion: internacion.ID || internacion.id },
+            order: [['fecha', 'DESC']]
         });
         const idsEvoluciones = evoluciones.map(evo => evo.id);
-
+        const ultimaEvolucion = evoluciones.length > 0 ? evoluciones[0] : null;
         const tratamientos = await Tratamiento.findAll({
             where: { 
                 id_evolucion_medica: idsEvoluciones,
@@ -583,6 +584,7 @@ exports.mostrarAdministracion = async (req, res) => {
             internacion,
             paciente: internacion.paciente,
             evaluacion,
+            ultimaEvolucion,
             tratamientos,
             catalogoMedicamentos,
             historial,

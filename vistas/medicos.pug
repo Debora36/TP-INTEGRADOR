@@ -501,7 +501,7 @@ block scripts
             }
         }
 
-        //Cambiar estado de un tratamiento (Finalizar / Suspender) sin recargar la página
+        //Cambiar estado de un tratamiento
         document.querySelectorAll('.btn-cambiar-estado').forEach(boton => {
             boton.addEventListener('click', async () => {
                 const nuevoEstado = boton.dataset.nuevoEstado;

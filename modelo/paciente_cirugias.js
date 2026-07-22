@@ -21,7 +21,7 @@ const PacienteCirugias = sequelize.define('paciente_cirugias', {
     },
     fecha: {
         type: DataTypes.DATEONLY, // DATEONLY guarda solo la fecha (YYYY-MM-DD), sin la hora
-        allowNull: true
+        allowNull: false
     },
     observaciones: {
         type: DataTypes.TEXT,

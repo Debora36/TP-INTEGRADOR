@@ -38,6 +38,7 @@ html(lang="en")
                             th Habitación
                             th Cama
                             th Fecha ingreso
+                            th Estado
                             th Acciones
                         tbody
                             each internacion in internaciones
@@ -51,11 +52,19 @@ html(lang="en")
                                     td
                                         input.form-control.fecha(type="date", value=internacion.FechaIngreso.toISOString().split('T')[0], readonly)
                                     td
-                                        form(action="/admision/editar" method="GET").p-0
-                                            input(type="hidden", name="dni", value=DNI)
-                                            input(type="hidden", name="fecha", value=internacion.FechaIngreso.toISOString())
-                                            button.btn-editar.btn.btn-success(type="submit" data-id=internacion.id data-fecha=internacion.FechaIngreso data-dni=dni) Editar
-                                        button.btn.btn-danger.btn.eliminar(type="button") Eliminar
+                                        if !internacion.FechaAlta
+                                            span.badge.bg-success.me-2.m-0 Internación activa
+                                        else
+                                            span.badge.bg-secondary.me-2.m-0 Dada de alta
+                                    td
+                                        if !internacion.FechaAlta
+                                            form(action="/admision/editar" method="GET").p-0
+                                                input(type="hidden", name="dni", value=DNI)
+                                                input(type="hidden", name="fecha", value=internacion.FechaIngreso.toISOString())
+                                                button.btn-editar.btn.btn-success(type="submit") Editar
+                                            button.btn.btn-danger.btn.eliminar(type="button") Eliminar
+                                        else
+                                            button.btn.btn-danger.btn.eliminar(type="button") Eliminar
                                    
         .container
             .row.justify-content-center

@@ -427,7 +427,7 @@ exports.procesarAlta = async (req, res) => {
         if (internacion.ID_Cama) {
             const cama = await Cama.findByPk(internacion.ID_Cama);
             if (cama) {
-                cama.disponible = 1;
+                cama.disponible = true;
                 await cama.save();
             }
         }
