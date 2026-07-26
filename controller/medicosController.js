@@ -273,7 +273,7 @@ exports.verMedicacionAdministrada = async (req, res) => {
 exports.cambiarEstadoTratamiento = async (req, res) => {
     try {
         const idTratamiento = req.params.id;
-        const { nuevoEstado, dniPaciente } = req.body; 
+        const { nuevoEstado } = req.body; 
 
         await Tratamiento.update(
             { estado: nuevoEstado },

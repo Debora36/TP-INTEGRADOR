@@ -8,7 +8,7 @@ const EvaluacionIngreso = sequelize.define('EvaluacionIngreso', {
     Fecha_Hora: { type: DataTypes.DATE, allowNull: false },
     Motivo_Principal: { type: DataTypes.TEXT },
     Sintomas_Desc: { type: DataTypes.STRING },
-    Prioridad: { type: DataTypes.STRING },  // Escala 1-5
+    Prioridad: { type: DataTypes.STRING },
     Plan_Cuidados_Preliminar: { type: DataTypes.TEXT },
   }, {
     tableName: 'evaluacion_ingreso',

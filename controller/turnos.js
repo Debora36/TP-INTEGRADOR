@@ -5,7 +5,6 @@ exports.formularioTurnos = async (req, res) => {
   const medicos = await Medico.findAll();
   console.log('Médicos cargados:');
   res.render('recepcion', {
-    //medico: medicos,
     medicos: medicos,
     data: {}
   });

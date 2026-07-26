@@ -1,8 +1,10 @@
 const Nacionalidad = require('../modelo/nacionalidad');
 const ObraSocial = require('../modelo/obra_social');
 const Plan = require('../modelo/plan_obra_social');
+const Paciente = require('../modelo/paciente');
 const { Op } = require('sequelize');
 const { Internacion} = require('../modelo');
+
 
 exports.formularioPaciente = async (req, res) => {
   try {
@@ -30,9 +32,6 @@ exports.formularioPaciente = async (req, res) => {
   res.status(500).send('Error al cargar formulario');
 }
 };
-
-const path = require('path');
-const Paciente = require(path.resolve(__dirname, '../modelo/paciente'));
 
 exports.crearPaciente = async function(req, res) {
   let {

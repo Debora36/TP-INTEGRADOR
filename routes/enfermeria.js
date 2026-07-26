@@ -4,6 +4,7 @@ const { verificarSesion, verificarRol } = require('../middleware/auth');
 const enfermeriaController = require('../controller/enfermeriaController');
 router.use(verificarSesion);
 router.use(verificarRol('Enfermero'));
+router.get('/', enfermeriaController.buscarPorCama);
 router.get('/buscar', enfermeriaController.buscarPorCama);
 
 

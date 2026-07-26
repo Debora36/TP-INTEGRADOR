@@ -166,7 +166,6 @@ html(lang="es")
                                                             type="button"
                                                             title="Finalizar Tratamiento"
                                                             data-id=trat.id
-                                                            data-dni=paciente.DNI
                                                             data-nuevo-estado="Finalizado"
                                                         )
                                                             i.fas.fa-check-double
@@ -506,7 +505,6 @@ block scripts
             boton.addEventListener('click', async () => {
                 const nuevoEstado = boton.dataset.nuevoEstado;
                 const idTratamiento = boton.dataset.id;
-                const dniPaciente = boton.dataset.dni;
 
                 const mensajeConfirm = nuevoEstado === 'Finalizado'
                     ? '¿Marcar tratamiento como Finalizado?'
@@ -518,7 +516,7 @@ block scripts
                     const res = await fetch(`/medicos/cambiar-estado-tratamiento/${idTratamiento}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nuevoEstado, dniPaciente })
+                        body: JSON.stringify({ nuevoEstado })
                     });
 
                     const data = await res.json();

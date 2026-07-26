@@ -1,12 +1,12 @@
+require('dotenv').config();
 const express = require('express');
 const pug = require('pug');
 const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
-//const mysql = require('mysql2');
 const sequelize = require('./db');
 const { verificarSesion, verificarRol } = require('./middleware/auth');
-
+const session = require('express-session');
 app.set('views', path.join(__dirname, 'vistas'));
 app.set('view engine', 'pug');
 
@@ -20,7 +20,6 @@ app.use((req, res, next) => {
   next();
 });
 
-const session = require('express-session');
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -45,7 +44,7 @@ const logoutRouter = require('./routes/logout');
 const rutasAPI = require('./routes/api');
 const pacienteRoutes = require('./routes/paciente');
 const habitacionesRoutes = require('./routes/habitaciones');
-
+const recepcionRoutes = require('./routes/recepcion');
 // Usar rutas
 app.use('/modelo/paciente', pacienteRoutes);//lo uso para buscar paciente por dni
 app.use('/paciente', pacienteRoutes);//lo uso para editar eliminar y asociar paciente
@@ -58,25 +57,8 @@ app.use('/api', rutasAPI);//para cargar los planes de obra social
 app.use('/Modificar', require('./routes/modificar'));//para buscar/editar/eliminar internaciones
 app.use('/turnos', require('./routes/turnos'));
 app.use('/medicos', require('./routes/medicos'));
-app.get('/enfermeria', verificarSesion, (req, res) => {
-  res.redirect('/enfermeria/buscar');
-});
 app.use('/enfermeria', require('./routes/enfermeria'));
-
-// Vistas protegidas: solo para usuarios autenticados
-const Medico = require('./modelo/medico');
-app.get('/recepcionista', verificarSesion, verificarRol('Recepcionista'), async (req, res) => {
-   try {
-    const medicos = await Medico.findAll({ order: [['nombre', 'ASC']] });
-    res.render('recepcion', { usuario: req.session.usuario, medicos });
-  } catch (error) {
-    console.error('Error al cargar médicos:', error);
-    res.status(500).send('Error al cargar la vista de recepción');
-  }
-});
-app.get('/modificar', verificarSesion, verificarRol('Recepcionista'), (req, res) => {
-  res.render('modificar', { usuario: req.session.usuario });
-});
+app.use('/recepcionista', recepcionRoutes);
 
 
 // Página principal: inicio de sesión
