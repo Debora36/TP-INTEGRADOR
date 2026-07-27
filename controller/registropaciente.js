@@ -25,6 +25,7 @@ exports.formularioPaciente = async (req, res) => {
   res.render('nuevopaciente', {
     nacionalidad: nacionalidades,
     obra_social: obrasSociales,
+    dniPrellenado: req.query.dni || ''
   });
 
 } catch (error) {

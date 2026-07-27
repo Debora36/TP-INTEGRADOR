@@ -118,7 +118,15 @@ html(lang="en")
               turnoForm.reset();
               eliminarForm.style.display = "none";
             } else {
-              alert('Error al asignar turno');
+              const data = await res.json();
+              if (data.error === 'paciente_no_encontrado') {
+                const irARegistrar = confirm('El paciente no está registrado en el sistema. ¿Querés registrarlo ahora?');
+                if (irARegistrar) {
+                  window.location.href = `/registro?dni=${encodeURIComponent(document.getElementById('dni_paciente').value)}`;
+                }
+              } else {
+                alert(data.mensaje || 'Error al asignar turno');
+              }
             }
           } catch (error) {
             console.error('Error en el envío:', error);

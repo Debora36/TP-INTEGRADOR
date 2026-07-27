@@ -21,6 +21,9 @@ exports.crearTurno = async (req, res) => {
     const { dni_paciente, medico, fecha, hora } = req.body;
     
     const paciente = await Paciente.findOne({ where: { DNI: dni_paciente } });
+    if (!paciente) {
+      return res.status(404).json({ error: 'paciente_no_encontrado', mensaje: 'El paciente no está registrado en el sistema.' });
+    }
     const medicoDB = await Medico.findByPk(medico);
     if (!paciente || !medicoDB) return res.status(404).send('Paciente o médico no encontrado');
 

@@ -30,10 +30,16 @@ html(lang="en")
           button(type="button" class="btn btn-primary w-100" onclick="buscarPaciente()").mt-4 Buscar paciente
         .col-md-4
           button.btn.btn-danger.w-100(type="button" onclick="pacienteDeUrgencia()").mt-4 Urgencia
-      .row
-        label Paciente encontrado:
-        h2#nombrePaciente.text-primary
-        h3#dni_urg.text-danger
+      .row.mt-4
+        .col-12
+          #resultadoPaciente.alert.d-none.shadow-sm.border-0.border-start.border-5
+            .d-flex.align-items-center
+              i#iconoPaciente.fa-solid.fa-2x.me-3
+              div
+                h6.text-muted.mb-1 Paciente seleccionado:
+                h3#nombrePaciente.mb-0.fw-bold.text-dark
+                h5#dni_urg.text-danger.mt-2.mb-0.d-none
+
         input(type="hidden" name="Genero" id="Genero" required)
       form#form-asignacion(action="/habitaciones/asignar-habitacion" method="POST").p-0
         .row
@@ -77,7 +83,15 @@ html(lang="en")
             if (!response.ok) return alert('Paciente no encontrado.');
             const paciente = await response.json();
             document.getElementById('nombrePaciente').textContent = `${paciente.Nombre} ${paciente.Apellido}`;
-
+            
+            // --- NUEVO CÓDIGO DE ESTILOS ---
+            const contenedor = document.getElementById('resultadoPaciente');
+            contenedor.classList.remove('d-none');
+            // Estilo verde (Success) para paciente normal
+            contenedor.className = 'alert alert-success shadow-sm border-0 border-start border-5 border-success';
+            document.getElementById('iconoPaciente').className = 'fa-solid fa-user-check fa-2x me-3 text-success';
+            document.getElementById('dni_urg').classList.add('d-none'); // Ocultamos el texto de urgencia por las dudas
+            // -------------------------------
             document.querySelector('input[name="ID_Paciente"]').value = paciente.id;
             document.querySelector('input[name="Genero"]').value = paciente.Genero;
             document.getElementById('dniOculto').value = dni; // guarda el DNI en input hidden
@@ -179,7 +193,15 @@ html(lang="en")
 
             const paciente = await res.json();
             document.getElementById('nombrePaciente').textContent = `${paciente.Nombre} ${paciente.Apellido}`;
-            document.getElementById('dni_urg').textContent = ` Guarde el DNI: ${paciente.DNI} del paciente desconocido para futuras referencias`;
+            document.getElementById('dni_urg').textContent = ` Guarde el DNI: ${paciente.DNI} del paciente desconocido para futuras referencias`
+            //Estilos
+            const contenedor = document.getElementById('resultadoPaciente');
+            contenedor.classList.remove('d-none');
+            // Estilo amarillo para urgencia
+            contenedor.className = 'alert alert-warning shadow-sm border-0 border-start border-5 border-warning';
+            document.getElementById('iconoPaciente').className = 'fa-solid fa-triangle-exclamation fa-2x me-3 text-warning';
+            document.getElementById('dni_urg').classList.remove('d-none'); // Mostramos el texto de urgencia
+
             document.querySelector('input[name="ID_Paciente"]').value = paciente.id;
             document.querySelector('input[name="Genero"]').value = paciente.Genero;
             document.getElementById('dniOculto').value = paciente.DNI;

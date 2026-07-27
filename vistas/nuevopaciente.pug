@@ -51,7 +51,7 @@ html(lang="en")
                 option(value="M", selected=(data.Genero === 'M')) Femenino
             .col-sm-6
               label(for="DNI") DNI:
-              input(type="text", name="DNI", required, value=data.DNI || '', pattern="^[0-9]{7,8}$" title="Ingrese un DNI válido de 7 u 8 dígitos")
+              input(type="text", name="DNI", required, value=(data && data.DNI) || dniPrellenado || '', pattern="^[0-9]{7,8}$" title="Ingrese un DNI válido de 7 u 8 dígitos")
 
           .row
             .col-sm-6
