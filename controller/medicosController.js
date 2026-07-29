@@ -38,7 +38,6 @@ exports.buscarPacienteMedico = async (req, res) => {
         //Para que no rompa cuando ingreso y todavia no puse el dni
         if (!numeroDNI || String(numeroDNI).trim() === "") {
             return res.render('medicos', { 
-                usuario: req.session.usuario,
                 paciente: null, 
                 internacion: null,
                 turnos: turnos, 
@@ -62,7 +61,6 @@ exports.buscarPacienteMedico = async (req, res) => {
 
         if (!internacion) {
             return res.render('medicos', { 
-                usuario: req.session.usuario,
                 paciente: null, internacion: null, turnos: turnos,
                 evoluciones: [], estudios: [], tratamientos: [],
                 catalogoMedicamentos: catalogoMedicamentos,
@@ -94,7 +92,6 @@ exports.buscarPacienteMedico = async (req, res) => {
         });
 
         res.render('medicos', { 
-            usuario: req.session.usuario,
             paciente: internacion.paciente, 
             internacion: internacion, 
             turnos: turnos, 
@@ -108,7 +105,7 @@ exports.buscarPacienteMedico = async (req, res) => {
     } catch (error) {
         console.error('Error fatal buscando paciente:', error);
         res.status(500).render('medicos', { 
-            usuario: req.session.usuario, paciente: null, internacion: null, turnos: [],
+            paciente: null, internacion: null, turnos: [],
             evoluciones: [], estudios: [], tratamientos: [], catalogoMedicamentos: [],
             mensaje: 'Error del servidor al buscar datos.' 
         });
@@ -228,7 +225,6 @@ exports.verSignosVitales = async (req, res) => {
         });
 
         res.render('medicos_signos_vitales', { 
-            usuario: req.session.usuario, 
             internacion, 
             signos 
         });
@@ -259,7 +255,6 @@ exports.verMedicacionAdministrada = async (req, res) => {
         });
 
         res.render('medicos_medicacion_admin', { 
-            usuario: req.session.usuario, 
             internacion, 
             medicaciones,
         });
@@ -319,7 +314,6 @@ exports.verHistoriaGeneral = async (req, res) => {
         const listaMedicamentos = await Medicacion.findAll();
 
         res.render('medicos_historial', {
-            usuario: req.session.usuario,
             internacion,
             paciente: internacion.paciente,
             todasAlergias,

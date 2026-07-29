@@ -8,10 +8,10 @@ const sequelize = require('./db');
 const { verificarSesion, verificarRol } = require('./middleware/auth');
 const session = require('express-session');
 app.set('views', path.join(__dirname, 'vistas'));
-app.set('view engine', 'pug');
+app.set('view engine', 'pug');//Para que express pueda representar archivos de plantilla
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));//Sirve para Leer datos del formulario y guardarlos dentro de req.body
 app.use(express.json());
 
 // Middleware de debug
@@ -31,34 +31,31 @@ app.use(session({
 }));
 
 app.use((req, res, next) => {
-  res.locals.usuario = req.session.usuario;
+  res.locals.usuario = req.session.usuario;//evito repetir usuario: req.session.usuario en cada res.render
   next();
 });
 
 
 // Importar rutas
 const registroPacienteRoutes = require('./routes/nuevopaciente');
-const registroAdmisionRoutes = require('./routes/admision');
+//const registroAdmisionRoutes = require('./routes/admision');
 const loginRouter = require('./routes/login');
 const logoutRouter = require('./routes/logout');
 const rutasAPI = require('./routes/api');
 const pacienteRoutes = require('./routes/paciente');
-const habitacionesRoutes = require('./routes/habitaciones');
+//const habitacionesRoutes = require('./routes/habitaciones');
 const recepcionRoutes = require('./routes/recepcion');
 // Usar rutas
 app.use('/modelo/paciente', pacienteRoutes);//lo uso para buscar paciente por dni
 app.use('/paciente', pacienteRoutes);//lo uso para editar eliminar y asociar paciente
 app.use('/registro', registroPacienteRoutes);
-app.use('/admision', registroAdmisionRoutes);
 app.use('/login', loginRouter);
 app.use('/logout', logoutRouter);
-app.use('/habitaciones', habitacionesRoutes);
 app.use('/api', rutasAPI);//para cargar los planes de obra social
-app.use('/Modificar', require('./routes/modificar'));//para buscar/editar/eliminar internaciones
 app.use('/turnos', require('./routes/turnos'));
 app.use('/medicos', require('./routes/medicos'));
 app.use('/enfermeria', require('./routes/enfermeria'));
-app.use('/recepcionista', recepcionRoutes);
+app.use('/', recepcionRoutes);
 
 
 // Página principal: inicio de sesión

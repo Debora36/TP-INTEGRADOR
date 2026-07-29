@@ -28,7 +28,6 @@ exports.login = async (req, res) => {
       rol: user.rol,
       id_perfil: null 
     };
-    console.log("Usuario autenticado:", datosSesion);
 
     if (user.rol === 'Enfermero') {
         // Buscamos en la tabla enfermero usando el ID del usuario
