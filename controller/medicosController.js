@@ -146,6 +146,11 @@ exports.guardarEvolucion = async (req, res) => {
             transaction: t
         });
 
+        if (!medicoActual) {
+            await t.rollback();
+            return res.redirect(`/medicos?errores=Tu usuario no tiene un perfil de médico asociado.`);
+        }
+
         //creo la evolucion mnedica
         const nuevaEvolucion = await EvolucionMedica.create({
             id_internacion: internacion_id, 
@@ -406,29 +411,33 @@ exports.actualizarHistoria = async (req, res) => {
 
 exports.procesarAlta = async (req, res) => {
     const { id_internacion } = req.body;
+    const t = await sequelize.transaction();
     try {
-        const internacion = await Internacion.findByPk(id_internacion);
+        const internacion = await Internacion.findByPk(id_internacion, { transaction: t });
         
         if (!internacion) {
+            await t.rollback();
             return res.status(404).send('Error: Internación no encontrada');
         }
 
         //asigno la fecha de alta
         internacion.FechaAlta = new Date();
-        await internacion.save();
+        await internacion.save({ transaction: t });
 
         //libero la cama
         if (internacion.ID_Cama) {
-            const cama = await Cama.findByPk(internacion.ID_Cama);
-            if (cama) {
-                cama.disponible = true;
-                await cama.save();
-            }
+            await Cama.update(
+                { disponible: true },
+                { where: { ID: internacion.ID_Cama }, transaction: t }
+            );
         }
-
-        res.redirect('/medicos/buscar');
+        await t.commit();
+        res.render('medicos', { 
+            mensaje: `Paciente dado de alta correctamente.` 
+        });
 
     } catch (error) {
+        await t.rollback();
         console.error('Error al procesar el alta médica:', error);
         res.status(500).send('Hubo un error al procesar el alta del paciente.');
     }

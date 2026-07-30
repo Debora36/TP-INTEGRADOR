@@ -108,6 +108,9 @@ exports.mostrarHistorialMedico = async (req, res) => {
       ]
     }]
   });
+  if (!internacion) {
+      return res.status(404).send('Internación no encontrada');
+    }
   const todasAlergias = await CatalogoAlergias.findAll();
   const todasPatologias = await CatalogoPatologias.findAll();
   const listaMedicamentos = await Medicacion.findAll();
@@ -480,7 +483,7 @@ exports.guardarSignos = async (req, res) => {
             await SignosVitales.create(datosParaBD);
         }
 
-        res.redirect(`/enfermeria/signos/${internacion_id}?mensaje=SignosVitalesGuardada`);
+        res.redirect(`/enfermeria/signos/${internacion_id}?mensaje=Signos vitales guardados correctamente`);
         
     } catch (error) {
         console.error("ERROR AL GUARDAR SIGNOS:", error);

@@ -3,7 +3,7 @@ const ObraSocial = require('../modelo/obra_social');
 const Plan = require('../modelo/plan_obra_social');
 const Paciente = require('../modelo/paciente');
 const { Op } = require('sequelize');
-const { Internacion} = require('../modelo');
+const { Internacion, sequelize} = require('../modelo');
 
 
 exports.formularioPaciente = async (req, res) => {
@@ -180,6 +180,7 @@ exports.eliminarPaciente = async (req, res) => {
 };
 
 exports.asociarPaciente = async (req, res) => {
+  const t = await sequelize.transaction();
   try {
     const dniNuevo = req.body.DNI; // DNI del paciente real (ya registrado)
     const dniUrgencia = req.body.dni_urgencia; // DNI falso del paciente n/n
@@ -188,20 +189,23 @@ exports.asociarPaciente = async (req, res) => {
     const pacienteNN = await Paciente.findOne({ where: { DNI: dniUrgencia } });
 
     if (!pacienteReal || !pacienteNN) {
+      await t.rollback();
       return res.status(404).send('No se encontraron ambos pacientes');
     }
 
     // Actualizar internación
     await Internacion.update(
       { ID_Paciente: pacienteReal.id },
-      { where: { ID_Paciente: pacienteNN.id } }
+      { where: { ID_Paciente: pacienteNN.id }, transaction: t}
     );
 
     // Eliminar paciente n/n
-    await pacienteNN.destroy();
+    await pacienteNN.destroy({ transaction: t });
 
+    await t.commit();
     res.redirect('/registro'); // o donde prefieras redirigir
   } catch (error) {
+    await t.rollback();
     console.error('Error asociando paciente:', error);
     res.status(500).send('Error interno del servidor');
   }
