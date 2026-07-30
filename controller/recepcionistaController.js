@@ -256,24 +256,23 @@ exports.buscarHabitaciones = async (req, res) => {
     const filtradas = habitaciones.filter(habitacion => {
       const camas = habitacion.camas;
 
-      const libres = camas.filter(c => !c.internacion).length;
-      const ocupadas = camas.filter(c => c.internacion);
+      const libres = camas.filter(c => !c.internacion).length;//numero de camas sin internacion activa
+      const ocupadas = camas.filter(c => c.internacion);//todas las camas que sí tienen internación activa
       const tipoNum = parseInt(tipo_habitacion);
       if (tipoNum === 1 && habitacion.camas_disponibles === 1) {
         // Habitaciones simples: al menos una cama libre
         return libres >= 1;
       }
-
+      //si elige habitacion doble 
       if (tipoNum === 2 && habitacion.camas_disponibles === 2) {
-        // Habitaciones dobles: misma lógica que antes
-        if (libres === 2) return true;
+        if (libres === 2) return true;//las dos camas vacias
 
-        if (libres === 1 && ocupadas.length === 1) {
+        if (libres === 1 && ocupadas.length === 1) {//una cama libre y una ocupada
           const generoPaciente = ocupadas[0].internacion?.paciente?.Genero;
           return generoPaciente === genero;
         }
 
-        return false;
+        return false;//no hay camas disponibles en esa habitacion
       }
 
       return false;
