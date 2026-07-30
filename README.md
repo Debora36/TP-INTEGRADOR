@@ -175,7 +175,6 @@ Este proyecto ha sido construido utilizando las siguientes tecnologías:
 | Método | Ruta                     | Descripción                                |
 | ------ | ------------------------ | ------------------------------------------ |
 | GET    | `/admision`              | Muestra el formulario de admisión          |
-| POST   | `/admision`              | Registra una nueva internación             |
 | GET    | `/admision/editar`       | Muestra la internacion del paciente        |
 | POST   | `/admision/urgencia`     | Registra un paciente de urgencia (NN)      |
 
@@ -185,7 +184,6 @@ Este proyecto ha sido construido utilizando las siguientes tecnologías:
 | ------ | ------------------ | -------------------------------------------------|
 | GET    | `/modificar`       | Muestra form para buscar internaciones por dni   |
 | GET    | `/modificar/buscar`| Lista las admisiones de un paciente              |
-| POST   | `/modificar/internacion/:id/editar` | Edita una internación           |
 | POST   | `/modificar/internacion/:id/eliminar`| Elimina una internacion por id |
 
 
@@ -196,7 +194,6 @@ Este proyecto ha sido construido utilizando las siguientes tecnologías:
 | GET    | `/turnos/formulario`  | Form de asignación de turno  |
 | GET    | `/turnos/buscar/:dni` | Muestra turno más reciente   |
 | POST   | `/turnos/crear`       | Crea un nuevo turno          |
-| POST   | `/turnos/eliminar/:id`| Elimina un turno por ID      |
 | POST   | `/turnos/presente/:id`| Marca un turno como presente |
 
 * Catálogo planes
@@ -262,9 +259,6 @@ Solución: Se creó un middleware reutilizable (verificarSesion y verificarRol) 
 
 7. Problema: Exposición accidental de credenciales de la base de datos al trackear y subir el archivo .env al repositorio público de GitHub.
 Solución: Se invalidó la contraseña comprometida cambiándola directamente en el motor de base de datos (MySQL). Luego, se agregó el archivo al .gitignore y se utilizó la opción "Stop tracking" en GitHub Desktop para eliminarlo del repositorio público de forma segura sin afectar el entorno local.
-
-8. Problema: El sistema arrojaba el error Cannot read properties of null (reading 'paciente') al intentar cargar el modal de "Alta Médica", ya que Pug intentaba renderizar variables de una internación antes de que el médico buscara a un paciente.
-Solución: Se implementó un renderizado condicional en la vista (if internacion && internacion.paciente) para construir el modal solo cuando los datos existen. Además, el código del modal se aisló en un archivo parcial (include) para reutilizarlo en múltiples vistas sin duplicar código.
 
 8. Problema: Editar una internación existente reutilizando el flujo de admisión no liberaba correctamente la cama anterior.
 Solución: Se agregó una rama modoEdicion dentro de asignarHabitacion que marca la cama anterior como disponible antes de asignar la nueva.
