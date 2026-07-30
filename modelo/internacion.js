@@ -15,14 +15,6 @@ const Internacion = sequelize.define('internacion', {
       key: 'id'
     }
   },
-  ID_Habitacion: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'habitacion',
-      key: 'ID'
-    }
-  },
   ID_Cama: {
     type: DataTypes.INTEGER,
     allowNull: false,

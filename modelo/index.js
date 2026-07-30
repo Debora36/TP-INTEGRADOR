@@ -52,9 +52,6 @@ Internacion.belongsTo(Cama, { foreignKey: 'ID_Cama', as: 'cama' });
 Paciente.hasMany(Internacion, { foreignKey: 'ID_Paciente', as: 'internaciones' });
 Internacion.belongsTo(Paciente, { foreignKey: 'ID_Paciente', as: 'paciente' });
 
-Habitacion.hasMany(Internacion, { foreignKey: 'ID_Habitacion', as: 'historial_internaciones' });
-Internacion.belongsTo(Habitacion, { foreignKey: 'ID_Habitacion', as: 'habitacion' });
-
 //Alergias (Muchos a Muchos)
 Paciente.belongsToMany(CatalogoAlergias, { through: PacienteAlergias, foreignKey: 'id_paciente', otherKey: 'id_alergia', through: PacienteAlergias, as: 'alergias' });
 CatalogoAlergias.belongsToMany(Paciente, { through: PacienteAlergias, foreignKey: 'id_alergia', otherKey: 'id_paciente' });
@@ -126,8 +123,6 @@ Medicacion.hasMany(TratamientoMedicacion, { foreignKey: 'ID_Medicacion', as: 'us
 TratamientoMedicacion.belongsTo(Medicacion, { foreignKey: 'ID_Medicacion', as: 'medicamento' });
 
 // Administración de medicación (Enfermería ejecuta el tratamiento)
-Tratamiento.hasMany(AdministracionMedicacion, { foreignKey: 'ID_Tratamiento', as: 'registros_administracion' });
-AdministracionMedicacion.belongsTo(Tratamiento, { foreignKey: 'ID_Tratamiento' });
 AdministracionMedicacion.belongsTo(Enfermero, { foreignKey: 'ID_Enfermero', as: 'enfermero'});
 Enfermero.hasMany(AdministracionMedicacion, { foreignKey: 'ID_Enfermero', as: 'administraciones' });
 

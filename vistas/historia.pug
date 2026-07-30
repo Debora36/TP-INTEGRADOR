@@ -22,13 +22,13 @@ html(lang="es")
             i.fas.fa-sign-out-alt.text-white
 
     .container
-      //- MENSAJES
+      //MENSAJES
       if mensaje
         .alert.alert-success(role='alert')= mensaje
       if errores
         .alert.alert-danger(role='alert')= errores
 
-      //- 1. RESUMEN DEL PACIENTE
+      //RESUMEN DEL PACIENTE
       .card.border-0.shadow-sm.mb-4
         .card-body.bg-white
           .row.align-items-center
@@ -55,7 +55,7 @@ html(lang="es")
 
 
       form#formHistoria(action="/enfermeria/historia/actualizar" method="POST")
-        //- Inputs ocultos vitales
+        //Inputs ocultos vitales
         input(type="hidden" name="id_internacion" value=internacion.ID)
         input(type="hidden" name="id_paciente" value=paciente.id)
 
@@ -67,7 +67,7 @@ html(lang="es")
                     div.border.rounded.p-2.mb-3(style="max-height: 150px; overflow-y: auto; background: #f8f9fa;")
                         if todasAlergias
                             each alergia in todasAlergias
-                                //- Lógica para ver si está marcado
+                                //Lógica para ver si está marcado
                                 - const tiene = paciente.alergias && paciente.alergias.some(a => a.id === alergia.id)
                                 .form-check
                                     input.form-check-input(
@@ -94,15 +94,15 @@ html(lang="es")
                                     )
                                     label.form-check-label(for=`pato_${opcion.id}`)= opcion.nombre
 
-          //- === COLUMNA DERECHA: TEXTOS ===
+          //COLUMNA DERECHA TEXTOS
           .col-md-8
             //MEDICACIÓN HABITUAL
             .card.shadow-sm.mb-4
                 .card-header.bg-white
                     h5.text-primary Medicación Habitual
                 .card-body
-                    //- 1. FORMULARIO DE AGREGADO (No envía, solo agrega a la lista visual)
-                    //- Fila del formulario para agregar (Asegúrate que las columnas estén al mismo nivel)
+                    //FORMULARIO DE AGREGADO No envía, solo agrega a la lista visual
+                    //Fila del formulario para agregar
                     .row.g-2.align-items-end.mb-3
                         .col-md-5
                             label.form-label Medicamento
@@ -190,7 +190,7 @@ html(lang="es")
                 .card-header.bg-white
                     h5.text-secondary Cirugías Previas
                 .card-body
-                    //- Formulario para agregar cirugía
+                    //Formulario para agregar cirugía
                     .row.g-2.align-items-end.mb-3
                         .col-md-6
                             label.form-label Nombre de la Cirugía
@@ -204,8 +204,7 @@ html(lang="es")
                             textarea.form-control(id="inputDetallesCirugia" rows="2" placeholder="Complicaciones, tipo de anestesia, etc.")
                         .col-md-1
                             button.btn.btn-success.w-100(type="button" onclick="agregarCirugia()") <i class="fas fa-plus"></i>
-                    //- Tabla visual
-                    //- Tabla visual
+                    // Tabla visual
                     table.table.table-sm.table-hover.mt-3
                         thead.table-light
                             tr
@@ -218,14 +217,14 @@ html(lang="es")
                                 each cir, index in paciente.cirugias
                                     tr(id=`fila-cir-${index}`)
                                         td= cir.cirugia
-                                        //- Formateamos la fecha si existe para mostrarla bonita
+                                        //Formateo la fecha si existe para mostrarla bonita
                                         td= cir.fecha ? new Date(cir.fecha).toLocaleDateString('es-AR') : 'Sin fecha'
                                         td= cir.observaciones || ''
                                         td
                                             button.btn.btn-danger.btn-sm(type="button" onclick=`eliminarFila('fila-cir-${index}')`) <i class="fas fa-trash"></i>
-                                            //- INPUTS OCULTOS
+                                            //INPUTS OCULTOS
                                             input(type="hidden" name=`cirugias[${index}][nombre]` value=cir.cirugia)
-                                            //- Guardamos la fecha original en formato YYYY-MM-DD para el input oculto
+                                            //Guardo la fecha original en formato YYYY-MM-DD para el input oculto
                                             input(type="hidden" name=`cirugias[${index}][fecha]` value=(cir.fecha ? cir.fecha : ''))
                                             input(type="hidden" name=`cirugias[${index}][observaciones]` value=(cir.observaciones || ''))
 
@@ -237,17 +236,17 @@ html(lang="es")
             let contadorAnt = 1000;
             let contadorCir = 1000;
 
-            // --- FUNCIÓN MEDICAMENTOS ---
+            //FUNCIÓN MEDICAMENTOS
             function agregarMedicamento() {
               console.log("Intentando agregar medicamento...");
 
-              // 1. Obtener elementos
+              //Obtengo los elementos
               const inputNombre = document.getElementById('inputMedicamento');
               const inputDosis = document.getElementById('inputDosis');
               const inputFrecuencia = document.getElementById('inputFrecuencia');
               const datalist = document.getElementById('listaMedicamentosData');
               
-              // 2. Validar existencia
+              //Validacion
               if (!inputNombre || !inputDosis || !datalist) {
                   console.error("Error HTML: Faltan IDs");
                   return;
@@ -257,7 +256,7 @@ html(lang="es")
               const valorDosis = inputDosis.value;
               const valorFrecuencia = inputFrecuencia.value;
 
-              // 3. Buscar ID
+              //busco id
               let idMedicamento = null;
               const opciones = datalist.options;
               
@@ -268,7 +267,7 @@ html(lang="es")
                   }
               }
 
-              // 4. Validar lógica
+
               if (!idMedicamento) {
                   alert("Selecciona un medicamento de la lista.");
                   return;
@@ -278,7 +277,7 @@ html(lang="es")
                   return;
               }
 
-              // 5. fila 
+              // fila 
               const filaId = `fila-med-${contadorMed}`;
               
               const html = `
@@ -305,9 +304,9 @@ html(lang="es")
               contadorMed++;
           }
 
-            // --- FUNCIÓN ANTECEDENTES ---
+            //FUNCIÓN ANTECEDENTES
             function agregarAntecedente() {
-                // 1. Obtener elementos
+
                 const inputNombre = document.getElementById('inputPatoFam');
                 const parentesco = document.getElementById('inputParentesco').value;
                 const list = document.getElementById('listaPatologiasFam');
@@ -317,17 +316,16 @@ html(lang="es")
                     return;
                 }
 
-                // 2. Buscar el ID de la patología elegida
+                //Busco el ID de la patologia
                 const option = Array.from(list.options).find(opt => opt.value === inputNombre.value);
                 const idPatologia = option ? option.getAttribute('data-id') : null;
 
-                // 3. Validar
                 if (!idPatologia) {
                     alert("Por favor, seleccione una patología válida de la lista.");
                     return;
                 }
 
-                // 4. Armar la fila de la tabla (tr > td)
+                //Armar la fila de la tabla (tr > td)
                 const filaId = `fila-ant-${contadorAnt}`;
                 const html = `
                     <td>${inputNombre.value}</td>
@@ -342,18 +340,18 @@ html(lang="es")
                     </td>
                 `;
 
-                // 5. Inyectar en el tbody
+                //Inyectar en el tbody
                 const tr = document.createElement('tr');
                 tr.id = filaId;
                 tr.innerHTML = html;
                 document.getElementById('tablaAntecedentesBody').appendChild(tr);
                 
-                // 6. Limpiar el input para el siguiente
+                //Limpiar el input para el siguiente
                 inputNombre.value = '';
                 contadorAnt++;
             }
 
-            // --- FUNCIÓN CIRUGÍAS ---
+            //FUNCIÓN CIRUGÍAS
             function agregarCirugia() {
                 const inputNombre = document.getElementById('inputCirugia');
                 const inputFecha = document.getElementById('inputFechaCirugia');
@@ -362,8 +360,7 @@ html(lang="es")
                 if (!inputNombre.value) {
                     return alert("Por favor, ingrese el nombre de la cirugía.");
                 }
-
-                // Darle un formato más legible a la fecha para la tabla visual
+                
                 let fechaMostrada = 'Sin fecha';
                 if (inputFecha.value) {
                     // Ajuste de zona horaria básico para evitar que reste un día al mostrar

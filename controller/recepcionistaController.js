@@ -122,22 +122,24 @@ exports.buscarInternaciones = async (req, res) => {
     const internaciones = await Internacion.findAll({
       order: [['FechaIngreso', 'DESC']],  
       where: { ID_Paciente: paciente.id },
-      attributes: ['ID', 'FechaIngreso', 'ID_Cama', 'ID_Habitacion', 'FechaAlta'],
+      attributes: ['ID', 'FechaIngreso', 'ID_Cama', 'FechaAlta'],
       include: [
         {
           model: Cama,
           as: 'cama',
-          attributes: ['id', 'nombre']
-        },
-        {
-          model: Habitacion,
-          as: 'habitacion', 
-          attributes: ['id', 'Numero', 'ID_ala_hospital'],
+          attributes: ['id', 'nombre'],
           include: [
             {
-              model: AlaHospital,
-              as: 'ala', 
-              attributes: ['id', 'nombre_ala']
+              model: Habitacion,
+              as: 'habitacion',
+              attributes: ['id', 'Numero', 'ID_ala_hospital'],
+              include: [
+                {
+                  model: AlaHospital,
+                  as: 'ala',
+                  attributes: ['id', 'nombre_ala']
+                }
+              ]
             }
           ]
         }
@@ -286,7 +288,6 @@ exports.buscarHabitaciones = async (req, res) => {
         disponible: !cama.internacion
       }))
     }));
-
     res.json(respuesta);
 
   } catch (err) {
@@ -321,7 +322,7 @@ exports.asignarHabitacion = async (req, res) => {
 
       // Asigno la nueva cama a la internación
       await internacion.update(
-        { ID_Cama, ID_Habitacion: cama.ID_Habitacion },
+        { ID_Cama},
         { transaction: t }
       );
 
@@ -333,7 +334,6 @@ exports.asignarHabitacion = async (req, res) => {
     } else {
       const nuevaInternacion = await Internacion.create({
         ID_Paciente,
-        ID_Habitacion: cama.ID_Habitacion,
         ID_Cama,
         FechaIngreso: new Date(),
         FechaAlta: null

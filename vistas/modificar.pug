@@ -44,9 +44,9 @@ html(lang="en")
                             each internacion in internaciones
                                 tr(data-id=internacion.ID)
                                     td
-                                        input.form-control(type="text", readonly, value=internacion.habitacion.ala.nombre_ala)
+                                        input.form-control(type="text", readonly, value=internacion.cama.habitacion.ala.nombre_ala)
                                     td
-                                        input.form-control(type="text", readonly, value=internacion.habitacion.Numero)
+                                        input.form-control(type="text", readonly, value=internacion.cama.habitacion.Numero)
                                     td
                                         input.form-control(type="text", readonly, value=internacion.cama.nombre)
                                     td

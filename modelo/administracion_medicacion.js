@@ -8,15 +8,6 @@ const administracion_medicacion = sequelize.define('administracion_medicacion', 
     autoIncrement: true,
     field: 'ID'
   },
-  id_tratamiento: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    field: 'ID_Tratamiento',
-    references: {
-      model: 'tratamiento',
-      key: 'id'
-    }
-  },
   id_enfermero: {
     type: DataTypes.INTEGER,
     allowNull: false,
